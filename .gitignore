@@ -1,0 +1,22 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Banco de dados
+*.db
+mrkeep.db
+
+# Ambiente virtual
+venv/
+env/
+.env/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Outros
+.DS_Store 

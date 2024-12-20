@@ -1,6 +1,10 @@
 import flet as ft
+from database import Database
 
 def main(page: ft.Page):
+    # Inicializa o banco de dados
+    db = Database()
+    
     # Configurações da página
     page.title = "MrKeep"
     page.window.maximized = True
