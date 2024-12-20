@@ -3,8 +3,8 @@ import flet as ft
 def main(page: ft.Page):
     # Configurações da página
     page.title = "MrKeep"
-    page.window_maximized = True
-    page.window_title_bar_hidden = True
+    page.window.maximized = True
+    page.window.title_bar_hidden = True
     page.theme_mode = ft.ThemeMode.DARK
     page.bgcolor = "#202124"
     page.padding = 0
@@ -15,15 +15,15 @@ def main(page: ft.Page):
     def toggle_menu(e):
         nonlocal menu_expanded
         menu_expanded = not menu_expanded
-        menu_button.icon = ft.icons.CLOSE if menu_expanded else ft.icons.MENU
+        menu_button.icon = ft.Icons.CLOSE if menu_expanded else ft.Icons.MENU
         page.update()
 
     def exit_app(e):
-        page.window_close()
+        page.window.close()
 
     # Ícone do menu hamburguer
     menu_button = ft.IconButton(
-        icon=ft.icons.MENU,
+        icon=ft.Icons.MENU,
         icon_color="#E2E2E3",
         on_click=toggle_menu,
         icon_size=24,
@@ -31,7 +31,7 @@ def main(page: ft.Page):
 
     # Ícone de sair
     exit_button = ft.IconButton(
-        icon=ft.icons.EXIT_TO_APP,
+        icon=ft.Icons.EXIT_TO_APP,
         icon_color="#E2E2E3",
         on_click=exit_app,
         icon_size=24,
@@ -81,5 +81,5 @@ def main(page: ft.Page):
     # Atualiza a página com as configurações
     page.update()
 
-# Inicia a aplicação
+# Inicia a aplicaç��o
 ft.app(main) 
