@@ -16,6 +16,9 @@ def main(page: ft.Page):
     # Estado do menu
     menu_expanded = False
 
+    # Estado do input de notas
+    input_expanded = False
+
     def toggle_menu(e):
         nonlocal menu_expanded
         menu_expanded = not menu_expanded
@@ -56,6 +59,113 @@ def main(page: ft.Page):
         
         side_menu.update()
         page.update()
+
+    def toggle_input(e):
+        nonlocal input_expanded
+        input_expanded = not input_expanded
+        update_note_input()
+        page.update()
+
+    def close_note(e):
+        nonlocal input_expanded
+        input_expanded = False
+        update_note_input()
+        page.update()
+
+    def create_collapsed_input():
+        return ft.Container(
+            content=ft.TextField(
+                border_color="transparent",
+                bgcolor="#28292C",
+                text_size=16,
+                color="#E2E2E3",
+                cursor_color="#E2E2E3",
+                hint_text="Criar uma nota...",
+                hint_style=ft.TextStyle(
+                    color="#E2E2E3",
+                    size=16,
+                ),
+                width=600,
+                height=50,
+                border_radius=10,
+                on_focus=toggle_input,
+            ),
+            padding=ft.padding.only(top=32),
+            alignment=ft.alignment.center,
+        )
+
+    def create_expanded_input():
+        return ft.Container(
+            content=ft.Container(
+                content=ft.Column([
+                    # Barra superior com título e ícone de fixar
+                    ft.Row([
+                        ft.TextField(
+                            border_color="transparent",
+                            bgcolor="transparent",
+                            text_size=16,
+                            color="#E2E2E3",
+                            cursor_color="#E2E2E3",
+                            hint_text="Título",
+                            hint_style=ft.TextStyle(
+                                color="#E2E2E3",
+                                size=16,
+                            ),
+                            width=540,
+                            height=40,
+                        ),
+                        ft.IconButton(
+                            icon=ft.Icons.PUSH_PIN_OUTLINED,
+                            icon_color="#E2E2E3",
+                            icon_size=20,
+                        ),
+                    ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+
+                    # Área de conteúdo
+                    ft.TextField(
+                        border_color="transparent",
+                        bgcolor="transparent",
+                        text_size=14,
+                        color="#E2E2E3",
+                        cursor_color="#E2E2E3",
+                        hint_text="Criar uma nota...",
+                        hint_style=ft.TextStyle(
+                            color="#E2E2E3",
+                            size=14,
+                        ),
+                        width=600,
+                        height=120,
+                        multiline=True,
+                    ),
+
+                    # Barra inferior com ícones
+                    ft.Row([
+                        ft.IconButton(
+                            icon=ft.Icons.PALETTE_OUTLINED,
+                            icon_color="#E2E2E3",
+                            icon_size=20,
+                        ),
+                        ft.TextButton(
+                            text="Fechar",
+                            style=ft.ButtonStyle(
+                                color="#E2E2E3",
+                            ),
+                            on_click=close_note,
+                        ),
+                    ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                ]),
+                bgcolor="#28292C",
+                padding=10,
+                border_radius=10,
+                width=600,
+            ),
+            padding=ft.padding.only(top=32),
+            alignment=ft.alignment.center,
+        )
+
+    def update_note_input():
+        note_input.content = create_expanded_input() if input_expanded else create_collapsed_input()
+        note_input.update()
 
     # Ícone do menu hamburguer
     menu_button = ft.IconButton(
@@ -210,6 +320,19 @@ def main(page: ft.Page):
         on_hover=handle_menu_hover,
     )
 
+    # Container do input de notas (inicialmente colapsado)
+    note_input = ft.Container(
+        content=create_collapsed_input(),
+    )
+
+    # Container da área central com o input de notas
+    content_area = ft.Container(
+        content=ft.Column(
+            [note_input],
+        ),
+        expand=True,
+    )
+
     # Container principal que vai conter a navbar e o menu lateral
     main_container = ft.Container(
         content=ft.Column(
@@ -218,9 +341,9 @@ def main(page: ft.Page):
                 ft.Row(
                     [
                         side_menu,
-                        ft.Container(expand=True),  # Área do conteúdo principal
+                        content_area,  # Substituímos o container vazio pelo content_area
                     ],
-                    expand=True,  # Faz a Row ocupar todo espaço vertical restante
+                    expand=True,
                     spacing=0,
                 ),
             ],
