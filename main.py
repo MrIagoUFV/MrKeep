@@ -17,8 +17,11 @@ def main(page: ft.Page):
         menu_expanded = not menu_expanded
         menu_button.icon = ft.Icons.CLOSE if menu_expanded else ft.Icons.MENU
         
-        # Atualiza a largura do menu lateral
+        # Atualiza a largura do menu lateral e visibilidade dos textos
         side_menu.width = 280 if menu_expanded else 72
+        for item in side_menu.content.controls:  # Agora itera sobre todos os itens
+            item.content.controls[1].opacity = 1 if menu_expanded else 0
+        
         side_menu.update()
         page.update()
 
@@ -79,12 +82,52 @@ def main(page: ft.Page):
         border=ft.border.only(bottom=ft.BorderSide(1, "#525355"))
     )
 
-    # Menu Lateral
+    # Menu Items
+    def create_menu_item(icon, text, selected=False):
+        return ft.Container(
+            content=ft.Row(
+                [
+                    ft.Icon(
+                        name=icon,
+                        size=24,
+                        color="#E2E2E3",
+                    ),
+                    ft.Text(
+                        text,
+                        color="#E2E2E3",
+                        size=16,
+                        opacity=1 if menu_expanded else 0,
+                        animate_opacity=300,
+                    )
+                ],
+                spacing=16,
+            ),
+            bgcolor="#41331C" if selected else None,
+            padding=ft.padding.all(16),
+            border_radius=ft.border_radius.all(24),
+            animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
+            on_hover=lambda e: handle_hover(e),
+        )
+
+    def handle_hover(e):
+        e.control.bgcolor = "#41331C" if e.data == "true" else None 
+        e.control.update()
+
+    # Menu Lateral atualizado
     side_menu = ft.Container(
-        width=72,  # Largura inicial (fechado)
+        width=72 if not menu_expanded else 280,
         bgcolor="#202124",
         border=ft.border.only(right=ft.BorderSide(1, "#525355")),
         animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
+        padding=ft.padding.only(top=8, left=8, right=8),
+        content=ft.Column(
+            [
+                create_menu_item(ft.Icons.LIGHTBULB_OUTLINE, "Notas", selected=True),
+                create_menu_item(ft.Icons.ARCHIVE_OUTLINED, "Arquivo"),
+                create_menu_item(ft.Icons.DELETE_OUTLINE, "Lixeira"),
+            ],
+            spacing=4,
+        ),
     )
 
     # Container principal que vai conter a navbar e o menu lateral
