@@ -111,36 +111,51 @@ def main(page: ft.Page):
     def create_menu_item(icon, text, selected=False):
         # Estilo quando fechado (72px)
         def get_collapsed_style():
-            return ft.Container(
+            container = ft.Container(
                 content=ft.Row(
                     [
-                        ft.Icon(
-                            name=icon,
-                            size=24,
-                            color="#E2E2E3",
+                        ft.Container(
+                            content=ft.Icon(
+                                name=icon,
+                                size=24,
+                                color="#E2E2E3",
+                            ),
+                            bgcolor="#41331C" if selected else None,
+                            padding=ft.padding.all(12),
+                            border_radius=ft.border_radius.all(50),
+                            width=48,
+                            height=48,
+                            alignment=ft.alignment.center,
                         ),
                     ],
-                    spacing=16,
+                    alignment=ft.MainAxisAlignment.START,
                 ),
-                bgcolor="#41331C" if selected else None,
-                padding=ft.padding.only(left=12, right=12, top=12, bottom=12),
-                border_radius=ft.border_radius.only(
-                    top_right=24,
-                    bottom_right=24
-                ),
-                margin=ft.margin.only(right=8),
+                padding=ft.padding.only(left=12, top=4, bottom=4),
                 animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
             )
 
+            if not selected:
+                def handle_hover(e):
+                    container.content.controls[0].bgcolor = "#3C3C3C" if e.data == "true" else None
+                    container.update()
+                container.on_hover = handle_hover
+
+            return container
+
         # Estilo quando aberto (280px)
         def get_expanded_style():
-            return ft.Container(
+            container = ft.Container(
                 content=ft.Row(
                     [
-                        ft.Icon(
-                            name=icon,
-                            size=24,
-                            color="#E2E2E3",
+                        ft.Container(
+                            content=ft.Icon(
+                                name=icon,
+                                size=24,
+                                color="#E2E2E3",
+                            ),
+                            width=48,
+                            height=48,
+                            alignment=ft.alignment.center,
                         ),
                         ft.Text(
                             text,
@@ -151,18 +166,26 @@ def main(page: ft.Page):
                         )
                     ],
                     spacing=16,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 ),
                 bgcolor="#41331C" if selected else None,
-                padding=ft.padding.only(left=12, right=12, top=12, bottom=12),
+                padding=ft.padding.only(left=12, right=12, top=4, bottom=4),
                 border_radius=ft.border_radius.only(
-                    top_right=24,
-                    bottom_right=24
+                    top_right=28,
+                    bottom_right=28
                 ),
                 margin=ft.margin.only(right=8),
                 animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
             )
 
-        # Retorna o estilo apropriado baseado no estado do menu
+            if not selected:
+                def handle_hover(e):
+                    container.bgcolor = "#28292C" if e.data == "true" else None
+                    container.update()
+                container.on_hover = handle_hover
+
+            return container
+
         return get_expanded_style() if menu_expanded else get_collapsed_style()
 
     # Menu Lateral atualizado
@@ -178,7 +201,7 @@ def main(page: ft.Page):
                 create_menu_item(ft.Icons.ARCHIVE_OUTLINED, "Arquivo"),
                 create_menu_item(ft.Icons.DELETE_OUTLINE, "Lixeira"),
             ],
-            spacing=4,
+            spacing=8,  # Espaçamento entre itens
         ),
         on_hover=handle_menu_hover,
     )
