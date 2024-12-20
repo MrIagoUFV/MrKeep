@@ -347,6 +347,34 @@ def main(page: ft.Page):
             visible=True,
         )
 
+        # Cria os botões de ação
+        action_buttons = ft.Row(
+            [
+                ft.IconButton(
+                    icon=ft.Icons.PALETTE_OUTLINED,
+                    icon_color="#E2E2E3",
+                    icon_size=20,
+                    tooltip="Mudar cor de fundo",
+                ),
+                ft.IconButton(
+                    icon=ft.Icons.ARCHIVE_OUTLINED,
+                    icon_color="#E2E2E3",
+                    icon_size=20,
+                    tooltip="Arquivar nota",
+                ),
+                ft.IconButton(
+                    icon=ft.Icons.DELETE_OUTLINE,
+                    icon_color="#E2E2E3",
+                    icon_size=20,
+                    tooltip="Excluir nota",
+                ),
+            ],
+            alignment=ft.MainAxisAlignment.START,
+            spacing=0,
+            opacity=0,
+            animate_opacity=300,
+        )
+
         # Função para criar o conteúdo do card
         def create_card_content():
             return ft.Container(
@@ -369,7 +397,11 @@ def main(page: ft.Page):
                         color="#E2E2E3",
                         opacity=0.8,
                     ),
-                ]),
+                    # Espaçador flexível
+                    ft.Container(expand=True),
+                    # Barra inferior com ícones de ação
+                    action_buttons,
+                ], spacing=10),
                 width=240,
                 height=240,  # Aumentando a altura do card para 240px
                 padding=15,
@@ -382,7 +414,9 @@ def main(page: ft.Page):
         card = create_card_content()
 
         def on_hover(e):
-            pin_button.opacity = 1 if e.data == "true" or is_pinned else 0
+            is_hovering = e.data == "true"
+            pin_button.opacity = 1 if is_hovering or is_pinned else 0
+            action_buttons.opacity = 1 if is_hovering else 0
             card.update()
 
         card.on_hover = on_hover
@@ -394,9 +428,41 @@ def main(page: ft.Page):
             opacity=0,
         )
 
-        # Cria uma cópia do card para o feedback do drag
-        feedback_card = create_card_content()
-        feedback_card.margin = ft.margin.only(bottom=20)  # Adiciona margem inferior para simular o espaçamento da grade
+        # Cria uma cópia do card para o feedback do drag, sem os botões de ação
+        feedback_card = ft.Container(
+            content=ft.Column([
+                # Barra superior com título e ícone de fixar
+                ft.Row([
+                    ft.Text(
+                        title,
+                        size=16,
+                        weight=ft.FontWeight.W_500,
+                        color="#E2E2E3",
+                        expand=True,
+                    ),
+                    ft.IconButton(
+                        icon=ft.Icons.PUSH_PIN if is_pinned else ft.Icons.PUSH_PIN_OUTLINED,
+                        icon_color="#E2E2E3",
+                        icon_size=20,
+                        opacity=1 if is_pinned else 0,
+                        visible=True,
+                    ),
+                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                # Conteúdo
+                ft.Text(
+                    content,
+                    size=14,
+                    color="#E2E2E3",
+                    opacity=0.8,
+                ),
+            ]),
+            width=240,
+            height=240,
+            padding=15,
+            border_radius=10,
+            bgcolor=bgcolor if bgcolor else ("#1E6F50" if is_pinned else "#28292C"),
+            margin=ft.margin.only(bottom=20),  # Adiciona margem inferior para simular o espaçamento da grade
+        )
 
         # Cria o DragTarget que vai envolver o card
         drag_target = ft.DragTarget(
