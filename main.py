@@ -17,10 +17,13 @@ def main(page: ft.Page):
         menu_expanded = not menu_expanded
         menu_button.icon = ft.Icons.CLOSE if menu_expanded else ft.Icons.MENU
         
-        # Atualiza a largura do menu lateral e visibilidade dos textos
+        # Atualiza o menu lateral com os novos estilos
         side_menu.width = 280 if menu_expanded else 72
-        for item in side_menu.content.controls:  # Agora itera sobre todos os itens
-            item.content.controls[1].opacity = 1 if menu_expanded else 0
+        side_menu.content.controls = [
+            create_menu_item(ft.Icons.LIGHTBULB_OUTLINE, "Notas", selected=True),
+            create_menu_item(ft.Icons.ARCHIVE_OUTLINED, "Arquivo"),
+            create_menu_item(ft.Icons.DELETE_OUTLINE, "Lixeira"),
+        ]
         
         side_menu.update()
         page.update()
@@ -40,9 +43,12 @@ def main(page: ft.Page):
         menu_button.icon = ft.Icons.CLOSE if menu_expanded else ft.Icons.MENU
         side_menu.width = 280 if menu_expanded else 72
         
-        # Atualiza a visibilidade dos textos
-        for item in side_menu.content.controls:
-            item.content.controls[1].opacity = 1 if menu_expanded else 0
+        # Recria os itens do menu com o estilo apropriado
+        side_menu.content.controls = [
+            create_menu_item(ft.Icons.LIGHTBULB_OUTLINE, "Notas", selected=True),
+            create_menu_item(ft.Icons.ARCHIVE_OUTLINED, "Arquivo"),
+            create_menu_item(ft.Icons.DELETE_OUTLINE, "Lixeira"),
+        ]
         
         side_menu.update()
         page.update()
@@ -103,29 +109,61 @@ def main(page: ft.Page):
 
     # Menu Items
     def create_menu_item(icon, text, selected=False):
-        return ft.Container(
-            content=ft.Row(
-                [
-                    ft.Icon(
-                        name=icon,
-                        size=24,
-                        color="#E2E2E3",
-                    ),
-                    ft.Text(
-                        text,
-                        color="#E2E2E3",
-                        size=16,
-                        opacity=1 if menu_expanded else 0,
-                        animate_opacity=300,
-                    )
-                ],
-                spacing=16,
-            ),
-            bgcolor="#41331C" if selected else None,
-            padding=ft.padding.all(16),
-            border_radius=ft.border_radius.all(24),
-            animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
-        )
+        # Estilo quando fechado (72px)
+        def get_collapsed_style():
+            return ft.Container(
+                content=ft.Row(
+                    [
+                        ft.Icon(
+                            name=icon,
+                            size=24,
+                            color="#E2E2E3",
+                        ),
+                    ],
+                    spacing=16,
+                ),
+                bgcolor="#41331C" if selected else None,
+                padding=ft.padding.only(left=12, right=12, top=12, bottom=12),
+                border_radius=ft.border_radius.only(
+                    top_right=24,
+                    bottom_right=24
+                ),
+                margin=ft.margin.only(right=8),
+                animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
+            )
+
+        # Estilo quando aberto (280px)
+        def get_expanded_style():
+            return ft.Container(
+                content=ft.Row(
+                    [
+                        ft.Icon(
+                            name=icon,
+                            size=24,
+                            color="#E2E2E3",
+                        ),
+                        ft.Text(
+                            text,
+                            color="#E2E2E3",
+                            size=16,
+                            opacity=1,
+                            animate_opacity=300,
+                        )
+                    ],
+                    spacing=16,
+                ),
+                bgcolor="#41331C" if selected else None,
+                padding=ft.padding.only(left=12, right=12, top=12, bottom=12),
+                border_radius=ft.border_radius.only(
+                    top_right=24,
+                    bottom_right=24
+                ),
+                margin=ft.margin.only(right=8),
+                animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
+            )
+
+        # Retorna o estilo apropriado baseado no estado do menu
+        return get_expanded_style() if menu_expanded else get_collapsed_style()
 
     # Menu Lateral atualizado
     side_menu = ft.Container(
@@ -133,7 +171,7 @@ def main(page: ft.Page):
         bgcolor="#202124",
         border=ft.border.only(right=ft.BorderSide(1, "#525355")),
         animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
-        padding=ft.padding.only(top=8, left=8, right=8),
+        padding=ft.padding.only(top=8, right=0, left=0),
         content=ft.Column(
             [
                 create_menu_item(ft.Icons.LIGHTBULB_OUTLINE, "Notas", selected=True),
