@@ -19,6 +19,18 @@ def main(page: ft.Page):
     # Estado do input de notas
     input_expanded = False
 
+    # Lista de cores para as notas
+    note_colors = [
+        "#28292C",  # Cinza padrão
+        "#1E6F50",  # Verde
+        "#614A19",  # Marrom
+        "#4B443A",  # Bege escuro
+        "#662E1E",  # Vermelho escuro
+        "#3C3F43",  # Cinza escuro
+        "#1A237E",  # Azul escuro
+        "#4A148C",  # Roxo escuro
+    ]
+
     def toggle_menu(e):
         nonlocal menu_expanded
         menu_expanded = not menu_expanded
@@ -325,10 +337,110 @@ def main(page: ft.Page):
         content=create_collapsed_input(),
     )
 
-    # Container da área central com o input de notas
+    def create_note_card(title, content, is_pinned=False, bgcolor=None):
+        return ft.Container(
+            content=ft.Column([
+                ft.Text(
+                    title,
+                    size=16,
+                    weight=ft.FontWeight.W_500,
+                    color="#E2E2E3",
+                ),
+                ft.Text(
+                    content,
+                    size=14,
+                    color="#E2E2E3",
+                    opacity=0.8,
+                ),
+            ]),
+            width=240,
+            height=120,
+            padding=15,
+            border_radius=10,
+            bgcolor=bgcolor if bgcolor else ("#1E6F50" if is_pinned else "#28292C"),
+        )
+
+    # Seção de notas fixadas
+    pinned_notes_section = ft.Column(
+        controls=[
+            ft.Container(
+                content=ft.Text(
+                    "FIXADAS",
+                    size=12,
+                    weight=ft.FontWeight.W_500,
+                    color="#E2E2E3",
+                ),
+                padding=ft.padding.only(left=30, bottom=10, top=20),
+            ),
+            ft.Container(
+                content=ft.GridView(
+                    runs_count=0,
+                    max_extent=250,
+                    spacing=10,
+                    run_spacing=10,
+                    padding=30,
+                    controls=[
+                        # Nota fixada com cor padrão verde
+                        create_note_card("Nota Fixada 1", "Conteúdo da nota fixada 1...", True),
+                        # Notas fixadas com cores diferentes
+                        create_note_card("Nota Fixada 2", "Conteúdo da nota fixada 2...", True, bgcolor="#614A19"),
+                        create_note_card("Nota Fixada 3", "Uma nota fixada mais longa para testar o layout do card...", True, bgcolor="#4A148C"),
+                        create_note_card("Nota Fixada 4", "Outra nota fixada com conteúdo diferente...", True, bgcolor="#1A237E"),
+                    ],
+                ),
+            ),
+        ],
+        visible=True,
+    )
+
+    # Seção de notas normais com mais notas mockup
+    normal_notes_section = ft.Column(
+        controls=[
+            ft.Container(
+                content=ft.Text(
+                    "OUTRAS",
+                    size=12,
+                    weight=ft.FontWeight.W_500,
+                    color="#E2E2E3",
+                ),
+                padding=ft.padding.only(left=30, bottom=10, top=20),
+            ),
+            ft.Container(
+                content=ft.GridView(
+                    runs_count=0,
+                    max_extent=250,
+                    spacing=10,
+                    run_spacing=10,
+                    padding=30,
+                    controls=[
+                        # Notas originais
+                        create_note_card("Reunião de Segunda", "Discutir pontos do projeto novo..."),
+                        create_note_card("Lista de Compras", "Pão\nLeite\nOvos\nFrutas"),
+                        create_note_card("Ideias Projeto", "1. Implementar dark mode\n2. Adicionar animações"),
+                        # Notas mockup adicionais com cores diferentes
+                        *[
+                            create_note_card(
+                                f"Nota {i}",
+                                f"Conteúdo da nota {i}...\nMais algumas linhas\npara testar o layout",
+                                bgcolor=note_colors[i % len(note_colors)]
+                            )
+                            for i in range(4, 24)
+                        ],
+                    ],
+                ),
+            ),
+        ],
+    )
+
+    # Container da área central atualizado com as grades de notas
     content_area = ft.Container(
         content=ft.Column(
-            [note_input],
+            [
+                note_input,
+                pinned_notes_section,
+                normal_notes_section,
+            ],
+            scroll=ft.ScrollMode.AUTO,
         ),
         expand=True,
     )
@@ -353,7 +465,7 @@ def main(page: ft.Page):
         expand=True,
     )
 
-    # Adiciona o container principal à página (ao invés de apenas a navbar)
+    # Adiciona o container principal à página (ao inv��s de apenas a navbar)
     page.add(main_container)
     
     # Atualiza a página com as configurações
