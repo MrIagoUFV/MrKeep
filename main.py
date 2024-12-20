@@ -338,29 +338,124 @@ def main(page: ft.Page):
     )
 
     def create_note_card(title, content, is_pinned=False, bgcolor=None):
-        return ft.Container(
-            content=ft.Column([
-                ft.Text(
-                    title,
-                    size=16,
-                    weight=ft.FontWeight.W_500,
-                    color="#E2E2E3",
-                ),
-                ft.Text(
-                    content,
-                    size=14,
-                    color="#E2E2E3",
-                    opacity=0.8,
-                ),
-            ]),
-            width=240,
-            height=120,
-            padding=15,
-            border_radius=10,
-            bgcolor=bgcolor if bgcolor else ("#1E6F50" if is_pinned else "#28292C"),
+        # Cria o botão de fixar
+        pin_button = ft.IconButton(
+            icon=ft.Icons.PUSH_PIN if is_pinned else ft.Icons.PUSH_PIN_OUTLINED,
+            icon_color="#E2E2E3",
+            icon_size=20,
+            opacity=1 if is_pinned else 0,
+            visible=True,
         )
 
-    # Seção de notas fixadas
+        # Função para criar o conteúdo do card
+        def create_card_content():
+            return ft.Container(
+                content=ft.Column([
+                    # Barra superior com título e ícone de fixar
+                    ft.Row([
+                        ft.Text(
+                            title,
+                            size=16,
+                            weight=ft.FontWeight.W_500,
+                            color="#E2E2E3",
+                            expand=True,
+                        ),
+                        pin_button,
+                    ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                    # Conteúdo
+                    ft.Text(
+                        content,
+                        size=14,
+                        color="#E2E2E3",
+                        opacity=0.8,
+                    ),
+                ]),
+                width=240,
+                height=120,
+                padding=15,
+                border_radius=10,
+                bgcolor=bgcolor if bgcolor else ("#1E6F50" if is_pinned else "#28292C"),
+                data=title,  # Usa o título como identificador
+            )
+
+        # Cria o card principal
+        card = create_card_content()
+
+        def on_hover(e):
+            pin_button.opacity = 1 if e.data == "true" or is_pinned else 0
+            card.update()
+
+        card.on_hover = on_hover
+
+        # Container invisível para mostrar durante o drag
+        placeholder = ft.Container(
+            width=240,
+            height=120,
+            opacity=0,
+        )
+
+        # Cria uma cópia do card para o feedback do drag
+        feedback_card = create_card_content()
+
+        # Cria o DragTarget que vai envolver o card
+        drag_target = ft.DragTarget(
+            group="notes",
+            content=card,
+            on_accept=lambda e: handle_drag_accept(e, card),
+        )
+
+        # Retorna o Draggable com todas as propriedades necessárias
+        return ft.Draggable(
+            group="notes",
+            content=drag_target,
+            content_when_dragging=placeholder,  # Container invisível no lugar original
+            content_feedback=feedback_card,  # Mostra o card inteiro durante o drag
+        )
+
+    def handle_drag_accept(e, target_card):
+        # Obtém o card de origem e destino
+        source_card = e.control.content
+        target_content = target_card
+
+        # Obtém as listas de notas
+        pinned_grid = pinned_notes_section.controls[1].content
+        normal_grid = normal_notes_section.controls[1].content
+
+        # Encontra os índices dos cards
+        source_index = -1
+        target_index = -1
+        grid = None
+
+        # Procura nas notas fixadas
+        for i, note in enumerate(pinned_grid.controls):
+            if note.content.content == source_card:
+                source_index = i
+                grid = pinned_grid
+                break
+            if note.content.content == target_content:
+                target_index = i
+                grid = pinned_grid
+                break
+
+        # Se não encontrou nas fixadas, procura nas normais
+        if source_index == -1 and target_index == -1:
+            for i, note in enumerate(normal_grid.controls):
+                if note.content.content == source_card:
+                    source_index = i
+                    grid = normal_grid
+                    break
+                if note.content.content == target_content:
+                    target_index = i
+                    grid = normal_grid
+                    break
+
+        # Se encontrou os dois cards na mesma grade, faz a troca
+        if grid and source_index != -1 and target_index != -1:
+            grid.controls[source_index], grid.controls[target_index] = \
+                grid.controls[target_index], grid.controls[source_index]
+            grid.update()
+
+    # Seção de notas fixadas atualizada para usar DragTarget
     pinned_notes_section = ft.Column(
         controls=[
             ft.Container(
@@ -380,9 +475,7 @@ def main(page: ft.Page):
                     run_spacing=10,
                     padding=30,
                     controls=[
-                        # Nota fixada com cor padrão verde
                         create_note_card("Nota Fixada 1", "Conteúdo da nota fixada 1...", True),
-                        # Notas fixadas com cores diferentes
                         create_note_card("Nota Fixada 2", "Conteúdo da nota fixada 2...", True, bgcolor="#614A19"),
                         create_note_card("Nota Fixada 3", "Uma nota fixada mais longa para testar o layout do card...", True, bgcolor="#4A148C"),
                         create_note_card("Nota Fixada 4", "Outra nota fixada com conteúdo diferente...", True, bgcolor="#1A237E"),
@@ -393,7 +486,7 @@ def main(page: ft.Page):
         visible=True,
     )
 
-    # Seção de notas normais com mais notas mockup
+    # Seção de notas normais atualizada para usar DragTarget
     normal_notes_section = ft.Column(
         controls=[
             ft.Container(
@@ -413,11 +506,9 @@ def main(page: ft.Page):
                     run_spacing=10,
                     padding=30,
                     controls=[
-                        # Notas originais
                         create_note_card("Reunião de Segunda", "Discutir pontos do projeto novo..."),
                         create_note_card("Lista de Compras", "Pão\nLeite\nOvos\nFrutas"),
                         create_note_card("Ideias Projeto", "1. Implementar dark mode\n2. Adicionar animações"),
-                        # Notas mockup adicionais com cores diferentes
                         *[
                             create_note_card(
                                 f"Nota {i}",
@@ -465,7 +556,7 @@ def main(page: ft.Page):
         expand=True,
     )
 
-    # Adiciona o container principal à página (ao inv��s de apenas a navbar)
+    # Adiciona o container principal à página (ao invs de apenas a navbar)
     page.add(main_container)
     
     # Atualiza a página com as configurações
