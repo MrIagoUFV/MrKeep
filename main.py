@@ -18,11 +18,22 @@ def main(page: ft.Page):
         menu_button.icon = ft.icons.CLOSE if menu_expanded else ft.icons.MENU
         page.update()
 
+    def exit_app(e):
+        page.window_close()
+
     # Ícone do menu hamburguer
     menu_button = ft.IconButton(
         icon=ft.icons.MENU,
         icon_color="#E2E2E3",
         on_click=toggle_menu,
+        icon_size=24,
+    )
+
+    # Ícone de sair
+    exit_button = ft.IconButton(
+        icon=ft.icons.EXIT_TO_APP,
+        icon_color="#E2E2E3",
+        on_click=exit_app,
         icon_size=24,
     )
 
@@ -46,12 +57,17 @@ def main(page: ft.Page):
     navbar = ft.Container(
         content=ft.Row(
             [
-                menu_button,
-                keep_icon,
-                title,
+                # Grupo da esquerda
+                ft.Row(
+                    [menu_button, keep_icon, title],
+                    spacing=10,
+                ),
+                # Grupo da direita
+                exit_button,
             ],
             spacing=10,
-            vertical_alignment=ft.CrossAxisAlignment.CENTER
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
         ),
         padding=ft.padding.only(left=10, right=10),
         height=64,
