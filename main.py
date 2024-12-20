@@ -16,6 +16,10 @@ def main(page: ft.Page):
         nonlocal menu_expanded
         menu_expanded = not menu_expanded
         menu_button.icon = ft.Icons.CLOSE if menu_expanded else ft.Icons.MENU
+        
+        # Atualiza a largura do menu lateral
+        side_menu.width = 280 if menu_expanded else 72
+        side_menu.update()
         page.update()
 
     def exit_app(e):
@@ -75,11 +79,39 @@ def main(page: ft.Page):
         border=ft.border.only(bottom=ft.BorderSide(1, "#525355"))
     )
 
-    # Adiciona a navbar à página
-    page.add(navbar)
+    # Menu Lateral
+    side_menu = ft.Container(
+        width=72,  # Largura inicial (fechado)
+        bgcolor="#202124",
+        border=ft.border.only(right=ft.BorderSide(1, "#525355")),
+        animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
+    )
+
+    # Container principal que vai conter a navbar e o menu lateral
+    main_container = ft.Container(
+        content=ft.Column(
+            [
+                navbar,
+                ft.Row(
+                    [
+                        side_menu,
+                        ft.Container(expand=True),  # Área do conteúdo principal
+                    ],
+                    expand=True,  # Faz a Row ocupar todo espaço vertical restante
+                    spacing=0,
+                ),
+            ],
+            spacing=0,
+            expand=True,
+        ),
+        expand=True,
+    )
+
+    # Adiciona o container principal à página (ao invés de apenas a navbar)
+    page.add(main_container)
     
     # Atualiza a página com as configurações
     page.update()
 
-# Inicia a aplicaç��o
+# Inicia a aplicação
 ft.app(main) 
