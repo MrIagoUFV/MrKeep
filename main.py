@@ -28,6 +28,25 @@ def main(page: ft.Page):
     def exit_app(e):
         page.window.close()
 
+    def handle_menu_hover(e):
+        nonlocal menu_expanded
+        # Abre o menu quando o mouse entra
+        if e.data == "true":
+            menu_expanded = True
+        # Fecha o menu quando o mouse sai
+        else:
+            menu_expanded = False
+            
+        menu_button.icon = ft.Icons.CLOSE if menu_expanded else ft.Icons.MENU
+        side_menu.width = 280 if menu_expanded else 72
+        
+        # Atualiza a visibilidade dos textos
+        for item in side_menu.content.controls:
+            item.content.controls[1].opacity = 1 if menu_expanded else 0
+        
+        side_menu.update()
+        page.update()
+
     # Ícone do menu hamburguer
     menu_button = ft.IconButton(
         icon=ft.Icons.MENU,
@@ -106,12 +125,7 @@ def main(page: ft.Page):
             padding=ft.padding.all(16),
             border_radius=ft.border_radius.all(24),
             animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
-            on_hover=lambda e: handle_hover(e),
         )
-
-    def handle_hover(e):
-        e.control.bgcolor = "#41331C" if e.data == "true" else None 
-        e.control.update()
 
     # Menu Lateral atualizado
     side_menu = ft.Container(
@@ -128,6 +142,7 @@ def main(page: ft.Page):
             ],
             spacing=4,
         ),
+        on_hover=handle_menu_hover,
     )
 
     # Container principal que vai conter a navbar e o menu lateral
