@@ -371,7 +371,7 @@ def main(page: ft.Page):
                     ),
                 ]),
                 width=240,
-                height=120,
+                height=240,  # Aumentando a altura do card para 240px
                 padding=15,
                 border_radius=10,
                 bgcolor=bgcolor if bgcolor else ("#1E6F50" if is_pinned else "#28292C"),
@@ -390,12 +390,13 @@ def main(page: ft.Page):
         # Container invisível para mostrar durante o drag
         placeholder = ft.Container(
             width=240,
-            height=120,
+            height=260,  # 240px do card + 20px de espaçamento (10px em cima e 10px embaixo)
             opacity=0,
         )
 
         # Cria uma cópia do card para o feedback do drag
         feedback_card = create_card_content()
+        feedback_card.margin = ft.margin.only(bottom=20)  # Adiciona margem inferior para simular o espaçamento da grade
 
         # Cria o DragTarget que vai envolver o card
         drag_target = ft.DragTarget(
