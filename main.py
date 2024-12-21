@@ -18,6 +18,10 @@ def main(page: ft.Page):
 
     # Estado do input de notas
     input_expanded = False
+    note_color = "#28292C"  # Cor padrão da nota em criação
+    is_pinned = False  # Estado de fixação da nota em criação
+    note_title = ""  # Estado do título da nota
+    note_content = ""  # Estado do conteúdo da nota
 
     # Lista de cores para as notas
     note_colors = [
@@ -79,10 +83,38 @@ def main(page: ft.Page):
         page.update()
 
     def close_note(e):
-        nonlocal input_expanded
+        nonlocal input_expanded, note_color, is_pinned, note_title, note_content
         input_expanded = False
+        note_color = "#28292C"  # Reseta para a cor padrão
+        is_pinned = False  # Reseta o estado de fixação
+        note_title = ""  # Reseta o título
+        note_content = ""  # Reseta o conteúdo
         update_note_input()
         page.update()
+
+    def toggle_pin(e):
+        nonlocal is_pinned
+        is_pinned = not is_pinned
+        # Atualiza o ícone do botão que disparou o evento
+        e.control.icon = ft.Icons.PUSH_PIN if is_pinned else ft.Icons.PUSH_PIN_OUTLINED
+        page.update()
+
+    def change_color(e, color):
+        nonlocal note_color
+        note_color = color
+        # Atualiza a cor do container do input expandido
+        # Como o input é recriado a cada mudança, a próxima vez que for
+        # renderizado já terá a nova cor
+        update_note_input()
+        page.update()
+
+    def update_title(e):
+        nonlocal note_title
+        note_title = e.control.value
+
+    def update_content(e):
+        nonlocal note_content
+        note_content = e.control.value
 
     def create_collapsed_input():
         return ft.Container(
@@ -102,76 +134,99 @@ def main(page: ft.Page):
                 border_radius=10,
                 on_focus=toggle_input,
             ),
-            padding=ft.padding.only(top=32),
             alignment=ft.alignment.center,
         )
 
     def create_expanded_input():
-        return ft.Container(
-            content=ft.Container(
-                content=ft.Column([
-                    # Barra superior com título e ícone de fixar
-                    ft.Row([
-                        ft.TextField(
-                            border_color="transparent",
-                            bgcolor="transparent",
-                            text_size=16,
-                            color="#E2E2E3",
-                            cursor_color="#E2E2E3",
-                            hint_text="Título",
-                            hint_style=ft.TextStyle(
-                                color="#E2E2E3",
-                                size=16,
-                            ),
-                            width=540,
-                            height=40,
-                        ),
-                        ft.IconButton(
-                            icon=ft.Icons.PUSH_PIN_OUTLINED,
-                            icon_color="#E2E2E3",
-                            icon_size=20,
-                        ),
-                    ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-
-                    # Área de conteúdo
+        # Container do input expandido
+        input_container = ft.Container(
+            content=ft.Column([
+                # Barra superior com título e ícone de fixar
+                ft.Row([
                     ft.TextField(
+                        value=note_title,  # Usa o valor atual do título
                         border_color="transparent",
                         bgcolor="transparent",
-                        text_size=14,
+                        text_size=16,
                         color="#E2E2E3",
                         cursor_color="#E2E2E3",
-                        hint_text="Criar uma nota...",
+                        hint_text="Título",
                         hint_style=ft.TextStyle(
                             color="#E2E2E3",
-                            size=14,
+                            size=16,
                         ),
-                        width=600,
-                        height=120,
-                        multiline=True,
+                        width=540,
+                        height=40,
+                        on_change=update_title,  # Atualiza o estado do título
                     ),
+                    ft.IconButton(
+                        icon=ft.Icons.PUSH_PIN if is_pinned else ft.Icons.PUSH_PIN_OUTLINED,
+                        icon_color="#E2E2E3",
+                        icon_size=20,
+                        on_click=toggle_pin,
+                    ),
+                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
 
-                    # Barra inferior com ícones
-                    ft.Row([
-                        ft.IconButton(
-                            icon=ft.Icons.PALETTE_OUTLINED,
-                            icon_color="#E2E2E3",
-                            icon_size=20,
+                # Área de conteúdo
+                ft.TextField(
+                    value=note_content,  # Usa o valor atual do conteúdo
+                    border_color="transparent",
+                    bgcolor="transparent",
+                    text_size=14,
+                    color="#E2E2E3",
+                    cursor_color="#E2E2E3",
+                    hint_text="Criar uma nota...",
+                    hint_style=ft.TextStyle(
+                        color="#E2E2E3",
+                        size=14,
+                    ),
+                    width=600,
+                    height=120,
+                    multiline=True,
+                    on_change=update_content,  # Atualiza o estado do conteúdo
+                ),
+
+                # Barra inferior com ícones
+                ft.Row([
+                    ft.PopupMenuButton(
+                        icon=ft.Icons.PALETTE_OUTLINED,
+                        icon_color="#E2E2E3",
+                        icon_size=20,
+                        items=[
+                            ft.PopupMenuItem(
+                                content=ft.Row([
+                                    ft.Container(
+                                        bgcolor=color,
+                                        width=24,
+                                        height=24,
+                                        border_radius=50,
+                                    ),
+                                    ft.Text(name, color="#E2E2E3", size=14),
+                                ], spacing=10),
+                                on_click=lambda e, c=color: change_color(e, c)
+                            ) for color, name in zip(note_colors, [
+                                "Cinza padrão", "Verde", "Marrom", "Bege escuro",
+                                "Vermelho escuro", "Cinza escuro", "Azul escuro", "Roxo escuro"
+                            ])
+                        ],
+                    ),
+                    ft.TextButton(
+                        text="Fechar",
+                        style=ft.ButtonStyle(
+                            color="#E2E2E3",
                         ),
-                        ft.TextButton(
-                            text="Fechar",
-                            style=ft.ButtonStyle(
-                                color="#E2E2E3",
-                            ),
-                            on_click=close_note,
-                        ),
-                    ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-                ]),
-                bgcolor="#28292C",
-                padding=10,
-                border_radius=10,
-                width=600,
-            ),
-            padding=ft.padding.only(top=32),
+                        on_click=close_note,
+                    ),
+                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+            ]),
+            bgcolor=note_color,  # Usa a cor atual da nota
+            padding=10,
+            border_radius=10,
+            width=600,
+        )
+
+        return ft.Container(
+            content=input_container,
             alignment=ft.alignment.center,
         )
 
@@ -541,12 +596,7 @@ def main(page: ft.Page):
                     spacing=10,
                     run_spacing=10,
                     padding=30,
-                    controls=[
-                        create_note_card("Nota Fixada 1", "Conteúdo da nota fixada 1...", True),
-                        create_note_card("Nota Fixada 2", "Conteúdo da nota fixada 2...", True, bgcolor="#614A19"),
-                        create_note_card("Nota Fixada 3", "Uma nota fixada mais longa para testar o layout do card...", True, bgcolor="#4A148C"),
-                        create_note_card("Nota Fixada 4", "Outra nota fixada com conteúdo diferente...", True, bgcolor="#1A237E"),
-                    ],
+                    controls=[],  # Lista vazia de notas fixadas
                 ),
             ),
         ],
@@ -572,19 +622,7 @@ def main(page: ft.Page):
                     spacing=10,
                     run_spacing=10,
                     padding=30,
-                    controls=[
-                        create_note_card("Reunião de Segunda", "Discutir pontos do projeto novo..."),
-                        create_note_card("Lista de Compras", "Pão\nLeite\nOvos\nFrutas"),
-                        create_note_card("Ideias Projeto", "1. Implementar dark mode\n2. Adicionar animações"),
-                        *[
-                            create_note_card(
-                                f"Nota {i}",
-                                f"Conteúdo da nota {i}...\nMais algumas linhas\npara testar o layout",
-                                bgcolor=note_colors[i % len(note_colors)]
-                            )
-                            for i in range(4, 24)
-                        ],
-                    ],
+                    controls=[],  # Lista vazia de notas normais
                 ),
             ),
         ],
@@ -594,11 +632,25 @@ def main(page: ft.Page):
     content_area = ft.Container(
         content=ft.Column(
             [
-                note_input,
-                pinned_notes_section,
-                normal_notes_section,
+                # Container fixo para o input
+                ft.Container(
+                    content=note_input,
+                    padding=ft.padding.only(top=25, left=25, right=25),
+                    bgcolor="#202124",
+                ),
+                # Container com scroll para as notas
+                ft.Container(
+                    content=ft.Column(
+                        [
+                            pinned_notes_section,
+                            normal_notes_section,
+                        ],
+                        scroll=ft.ScrollMode.AUTO,
+                    ),
+                    expand=True,
+                ),
             ],
-            scroll=ft.ScrollMode.AUTO,
+            spacing=0,
         ),
         expand=True,
     )
