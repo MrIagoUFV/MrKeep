@@ -135,7 +135,8 @@ def main(page: ft.Page):
                 title=nota['titulo'],
                 content=nota['conteudo'],
                 is_pinned=is_pinned,
-                bgcolor=nota['corFundo']
+                bgcolor=nota['corFundo'],
+                note_id=nota['id']  # Passa o ID da nota
             )
             
             # Adiciona na grade apropriada
@@ -446,7 +447,7 @@ def main(page: ft.Page):
         content=create_collapsed_input(),
     )
 
-    def create_note_card(title, content, is_pinned=False, bgcolor=None):
+    def create_note_card(title, content, is_pinned=False, bgcolor=None, note_id=None):
         # Cria o botão de fixar
         pin_button = ft.IconButton(
             icon=ft.Icons.PUSH_PIN if is_pinned else ft.Icons.PUSH_PIN_OUTLINED,
@@ -456,36 +457,37 @@ def main(page: ft.Page):
             visible=True,
         )
 
-        # Cria os botões de ação
-        action_buttons = ft.Row(
-            [
-                ft.IconButton(
-                    icon=ft.Icons.PALETTE_OUTLINED,
-                    icon_color="#E2E2E3",
-                    icon_size=20,
-                    tooltip="Mudar cor de fundo",
-                ),
-                ft.IconButton(
-                    icon=ft.Icons.ARCHIVE_OUTLINED,
-                    icon_color="#E2E2E3",
-                    icon_size=20,
-                    tooltip="Arquivar nota",
-                ),
-                ft.IconButton(
-                    icon=ft.Icons.DELETE_OUTLINE,
-                    icon_color="#E2E2E3",
-                    icon_size=20,
-                    tooltip="Excluir nota",
-                ),
-            ],
-            alignment=ft.MainAxisAlignment.START,
-            spacing=0,
-            opacity=0,
-            animate_opacity=300,
-        )
-
         # Função para criar o conteúdo do card
         def create_card_content():
+            # Cria os botões de ação
+            action_buttons = ft.Row(
+                [
+                    ft.IconButton(
+                        icon=ft.Icons.PALETTE_OUTLINED,
+                        icon_color="#E2E2E3",
+                        icon_size=20,
+                        tooltip="Mudar cor de fundo",
+                    ),
+                    ft.IconButton(
+                        icon=ft.Icons.ARCHIVE_OUTLINED,
+                        icon_color="#E2E2E3",
+                        icon_size=20,
+                        tooltip="Arquivar nota",
+                    ),
+                    ft.IconButton(
+                        icon=ft.Icons.DELETE_OUTLINE,
+                        icon_color="#E2E2E3",
+                        icon_size=20,
+                        tooltip="Excluir nota",
+                        on_click=lambda e: delete_note(e, note_id, card) if note_id else None,
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.START,
+                spacing=0,
+                opacity=0,
+                animate_opacity=300,
+            )
+
             return ft.Container(
                 content=ft.Column([
                     # Barra superior com título e ícone de fixar
@@ -516,7 +518,7 @@ def main(page: ft.Page):
                 padding=15,
                 border_radius=10,
                 bgcolor=bgcolor if bgcolor else ("#1E6F50" if is_pinned else "#28292C"),
-                data=title,
+                data={"id": note_id, "title": title},  # Armazena o ID e título da nota
             )
 
         # Cria o card principal
@@ -526,10 +528,10 @@ def main(page: ft.Page):
             is_hovering = e.data == "true"
             if is_hovering or is_pinned:
                 pin_button.opacity = 1
-                action_buttons.opacity = 1
+                card.content.controls[-1].opacity = 1  # action_buttons
             else:
                 pin_button.opacity = 0
-                action_buttons.opacity = 0
+                card.content.controls[-1].opacity = 0  # action_buttons
             page.update()
 
         card.on_hover = on_hover
@@ -634,6 +636,29 @@ def main(page: ft.Page):
             grid.controls[source_index], grid.controls[target_index] = \
                 grid.controls[target_index], grid.controls[source_index]
             grid.update()
+
+    def delete_note(e, note_id, card):
+        # Exclui a nota do banco de dados
+        db.excluir_nota(note_id)
+        
+        # Remove o card da interface
+        # Procura nas notas fixadas
+        for note in pinned_notes_section.controls[1].content.controls:
+            if note.content.content == card:
+                pinned_notes_section.controls[1].content.controls.remove(note)
+                break
+        
+        # Se não encontrou nas fixadas, procura nas normais
+        for note in normal_notes_section.controls[1].content.controls:
+            if note.content.content == card:
+                normal_notes_section.controls[1].content.controls.remove(note)
+                break
+        
+        # Verifica se precisa mostrar o empty state
+        if len(pinned_notes_section.controls[1].content.controls) == 0 and len(normal_notes_section.controls[1].content.controls) == 0:
+            content_area.content.controls[1].content = create_empty_state()
+        
+        page.update()
 
     # Seção de notas fixadas atualizada para usar DragTarget
     pinned_notes_section = ft.Column(
@@ -769,7 +794,8 @@ def main(page: ft.Page):
                 title=nota[1],  # titulo
                 content=nota[2],  # conteudo
                 is_pinned=bool(nota[7]),  # fixada
-                bgcolor=nota[8]  # corFundo
+                bgcolor=nota[8],  # corFundo
+                note_id=nota[0]  # id
             )
             
             # Adiciona na grade apropriada
