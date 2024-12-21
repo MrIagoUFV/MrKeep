@@ -5,6 +5,8 @@ from menu import create_menu_item, create_side_menu
 from addnota import create_note_input, note_colors
 from cardnotas import create_note_card
 from viewnotas import create_view_notas
+from notesections import create_notes_section
+from noteoperations import handle_drag_accept, create_note_card_from_data, remove_note_from_sections
 
 def main(page: ft.Page):
     # Inicializa o banco de dados
@@ -109,6 +111,46 @@ def main(page: ft.Page):
         nonlocal note_content
         note_content = e.control.value
 
+    def handle_note_drag_accept(e, target_card):
+        handle_drag_accept(
+            e, 
+            target_card, 
+            pinned_notes_section.controls[1].content,
+            normal_notes_section.controls[1].content
+        )
+
+    def delete_note(e, note_id, card):
+        # Exclui a nota do banco de dados
+        db.excluir_nota(note_id)
+        
+        # Remove o card da interface
+        remove_note_from_sections(card, pinned_notes_section, normal_notes_section)
+        
+        # Atualiza o content_area baseado na existência de notas
+        update_content_area()
+        page.update()
+
+    def change_note_color(e, note_id, card, new_color):
+        # Atualiza a cor no banco de dados
+        db.atualizar_nota(note_id, corFundo=new_color)
+        
+        # Atualiza a cor do card na interface
+        card.bgcolor = new_color
+        
+        # Atualiza a página inteira ao invés do card individual
+        page.update()
+
+    def archive_note(e, note_id, card):
+        # Atualiza a nota como arquivada no banco de dados
+        db.atualizar_nota(note_id, arquivada=1)
+        
+        # Remove o card da interface
+        remove_note_from_sections(card, pinned_notes_section, normal_notes_section)
+        
+        # Atualiza o content_area baseado na existência de notas
+        update_content_area()
+        page.update()
+
     def add_note(e):
         nonlocal note_title, note_content, is_pinned, note_color
         if note_title.strip():  # Só cria se tiver título
@@ -124,18 +166,21 @@ def main(page: ft.Page):
                 nota['fixada'] = 1
             
             # Cria o card
-            card = create_note_card(
-                title=nota['titulo'],
-                content=nota['conteudo'],
-                is_pinned=is_pinned,
-                bgcolor=nota['corFundo'],
-                note_id=nota['id'],  # Passa o ID da nota
-                on_color_change=change_note_color,
-                on_archive=archive_note,
-                on_delete=delete_note,
-                on_drag_accept=handle_drag_accept,
-                page=page
-            )
+            handlers = {
+                'on_color_change': change_note_color,
+                'on_archive': archive_note,
+                'on_delete': delete_note,
+                'on_drag_accept': handle_note_drag_accept
+            }
+            
+            card = create_note_card_from_data([
+                nota['id'],
+                nota['titulo'],
+                nota['conteudo'],
+                None, None, None, None,
+                nota.get('fixada', 0),
+                nota['corFundo']
+            ], handlers, page)
             
             # Adiciona na grade apropriada
             if is_pinned:
@@ -146,29 +191,13 @@ def main(page: ft.Page):
             # Fecha o input
             close_note(e)
             
-            # Atualiza o content_area para mostrar as notas ao invés do empty state
-            content_area.content = create_view_notas(
-                input_expanded=input_expanded,
-                note_color=note_color,
-                is_pinned=is_pinned,
-                note_title=note_title,
-                note_content=note_content,
-                toggle_input=toggle_input,
-                toggle_pin=toggle_pin,
-                change_color=change_color,
-                update_title=update_title,
-                update_content=update_content,
-                add_note=add_note,
-                close_note=close_note,
-                pinned_notes_section=pinned_notes_section,
-                normal_notes_section=normal_notes_section,
-            ).content
+            # Atualiza o content_area
+            update_content_area()
             
             # Atualiza a UI
             page.update()
 
-    def update_note_input():
-        nonlocal content_area
+    def update_content_area():
         content_area.content = create_view_notas(
             input_expanded=input_expanded,
             note_color=note_color,
@@ -185,6 +214,9 @@ def main(page: ft.Page):
             pinned_notes_section=pinned_notes_section,
             normal_notes_section=normal_notes_section,
         ).content
+
+    def update_note_input():
+        update_content_area()
         content_area.update()
 
     # Ícone do menu hamburguer
@@ -209,183 +241,9 @@ def main(page: ft.Page):
     # Menu Lateral usando o módulo menu.py
     side_menu = create_side_menu(menu_expanded, handle_menu_hover)
 
-    def handle_drag_accept(e, target_card):
-        # Obtém o card de origem e destino
-        source_card = e.control.content
-        target_content = target_card
-
-        # Obtém as listas de notas
-        pinned_grid = pinned_notes_section.controls[1].content
-        normal_grid = normal_notes_section.controls[1].content
-
-        # Encontra os índices dos cards
-        source_index = -1
-        target_index = -1
-        grid = None
-
-        # Procura nas notas fixadas
-        for i, note in enumerate(pinned_grid.controls):
-            if note.content.content == source_card:
-                source_index = i
-                grid = pinned_grid
-                break
-            if note.content.content == target_content:
-                target_index = i
-                grid = pinned_grid
-                break
-
-        # Se não encontrou nas fixadas, procura nas normais
-        if source_index == -1 and target_index == -1:
-            for i, note in enumerate(normal_grid.controls):
-                if note.content.content == source_card:
-                    source_index = i
-                    grid = normal_grid
-                    break
-                if note.content.content == target_content:
-                    target_index = i
-                    grid = normal_grid
-                    break
-
-        # Se encontrou os dois cards na mesma grade, faz a troca
-        if grid and source_index != -1 and target_index != -1:
-            grid.controls[source_index], grid.controls[target_index] = \
-                grid.controls[target_index], grid.controls[source_index]
-            grid.update()
-
-    def delete_note(e, note_id, card):
-        # Exclui a nota do banco de dados
-        db.excluir_nota(note_id)
-        
-        # Remove o card da interface
-        # Procura nas notas fixadas
-        for note in pinned_notes_section.controls[1].content.controls:
-            if note.content.content == card:
-                pinned_notes_section.controls[1].content.controls.remove(note)
-                break
-        
-        # Se não encontrou nas fixadas, procura nas normais
-        for note in normal_notes_section.controls[1].content.controls:
-            if note.content.content == card:
-                normal_notes_section.controls[1].content.controls.remove(note)
-                break
-        
-        # Atualiza o content_area baseado na existência de notas
-        content_area.content = create_view_notas(
-            input_expanded=input_expanded,
-            note_color=note_color,
-            is_pinned=is_pinned,
-            note_title=note_title,
-            note_content=note_content,
-            toggle_input=toggle_input,
-            toggle_pin=toggle_pin,
-            change_color=change_color,
-            update_title=update_title,
-            update_content=update_content,
-            add_note=add_note,
-            close_note=close_note,
-            pinned_notes_section=pinned_notes_section,
-            normal_notes_section=normal_notes_section,
-        ).content
-        
-        page.update()
-
-    def change_note_color(e, note_id, card, new_color):
-        # Atualiza a cor no banco de dados
-        db.atualizar_nota(note_id, corFundo=new_color)
-        
-        # Atualiza a cor do card na interface
-        card.bgcolor = new_color
-        
-        # Atualiza a página inteira ao invés do card individual
-        page.update()
-
-    def archive_note(e, note_id, card):
-        # Atualiza a nota como arquivada no banco de dados
-        db.atualizar_nota(note_id, arquivada=1)
-        
-        # Remove o card da interface
-        # Procura nas notas fixadas
-        for note in pinned_notes_section.controls[1].content.controls:
-            if note.content.content == card:
-                pinned_notes_section.controls[1].content.controls.remove(note)
-                break
-        
-        # Se não encontrou nas fixadas, procura nas normais
-        for note in normal_notes_section.controls[1].content.controls:
-            if note.content.content == card:
-                normal_notes_section.controls[1].content.controls.remove(note)
-                break
-        
-        # Atualiza o content_area baseado na existência de notas
-        content_area.content = create_view_notas(
-            input_expanded=input_expanded,
-            note_color=note_color,
-            is_pinned=is_pinned,
-            note_title=note_title,
-            note_content=note_content,
-            toggle_input=toggle_input,
-            toggle_pin=toggle_pin,
-            change_color=change_color,
-            update_title=update_title,
-            update_content=update_content,
-            add_note=add_note,
-            close_note=close_note,
-            pinned_notes_section=pinned_notes_section,
-            normal_notes_section=normal_notes_section,
-        ).content
-        
-        page.update()
-
-    # Seção de notas fixadas atualizada para usar DragTarget
-    pinned_notes_section = ft.Column(
-        controls=[
-            ft.Container(
-                content=ft.Text(
-                    "FIXADAS",
-                    size=12,
-                    weight=ft.FontWeight.W_500,
-                    color="#E2E2E3",
-                ),
-                padding=ft.padding.only(left=30, bottom=10, top=20),
-            ),
-            ft.Container(
-                content=ft.GridView(
-                    runs_count=0,
-                    max_extent=250,
-                    spacing=10,
-                    run_spacing=10,
-                    padding=30,
-                    controls=[],  # Lista vazia de notas fixadas
-                ),
-            ),
-        ],
-        visible=True,
-    )
-
-    # Seção de notas normais atualizada para usar DragTarget
-    normal_notes_section = ft.Column(
-        controls=[
-            ft.Container(
-                content=ft.Text(
-                    "OUTRAS",
-                    size=12,
-                    weight=ft.FontWeight.W_500,
-                    color="#E2E2E3",
-                ),
-                padding=ft.padding.only(left=30, bottom=10, top=20),
-            ),
-            ft.Container(
-                content=ft.GridView(
-                    runs_count=0,
-                    max_extent=250,
-                    spacing=10,
-                    run_spacing=10,
-                    padding=30,
-                    controls=[],  # Lista vazia de notas normais
-                ),
-            ),
-        ],
-    )
+    # Seções de notas usando o módulo notesections.py
+    pinned_notes_section = create_notes_section("FIXADAS", True)
+    normal_notes_section = create_notes_section("OUTRAS", False)
 
     # Container da área central atualizado com as grades de notas
     content_area = ft.Container(
@@ -416,7 +274,7 @@ def main(page: ft.Page):
                 ft.Row(
                     [
                         side_menu,
-                        content_area,  # Substituímos o container vazio pelo content_area
+                        content_area,
                     ],
                     expand=True,
                     spacing=0,
@@ -432,20 +290,16 @@ def main(page: ft.Page):
         # Carrega todas as notas ativas (não arquivadas e não na lixeira)
         notas = db.listar_notas()
         
+        handlers = {
+            'on_color_change': change_note_color,
+            'on_archive': archive_note,
+            'on_delete': delete_note,
+            'on_drag_accept': handle_note_drag_accept
+        }
+        
         for nota in notas:
             # Cria o card
-            card = create_note_card(
-                title=nota[1],  # titulo
-                content=nota[2],  # conteudo
-                is_pinned=bool(nota[7]),  # fixada
-                bgcolor=nota[8],  # corFundo
-                note_id=nota[0],  # id
-                on_color_change=change_note_color,
-                on_archive=archive_note,
-                on_delete=delete_note,
-                on_drag_accept=handle_drag_accept,
-                page=page
-            )
+            card = create_note_card_from_data(nota, handlers, page)
             
             # Adiciona na grade apropriada
             if nota[7]:  # fixada
@@ -454,27 +308,12 @@ def main(page: ft.Page):
                 normal_notes_section.controls[1].content.controls.append(card)
         
         # Atualiza o content_area baseado na existência de notas
-        content_area.content = create_view_notas(
-            input_expanded=input_expanded,
-            note_color=note_color,
-            is_pinned=is_pinned,
-            note_title=note_title,
-            note_content=note_content,
-            toggle_input=toggle_input,
-            toggle_pin=toggle_pin,
-            change_color=change_color,
-            update_title=update_title,
-            update_content=update_content,
-            add_note=add_note,
-            close_note=close_note,
-            pinned_notes_section=pinned_notes_section,
-            normal_notes_section=normal_notes_section,
-        ).content
+        update_content_area()
     
     # Carrega as notas existentes
     load_notes()
     
-    # Adiciona o container principal à página (ao invs de apenas a navbar)
+    # Adiciona o container principal à página
     page.add(main_container)
     
     # Atualiza a página com as configurações
