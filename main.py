@@ -490,6 +490,7 @@ def main(page: ft.Page):
                         icon_color="#E2E2E3",
                         icon_size=20,
                         tooltip="Arquivar nota",
+                        on_click=lambda e: archive_note(e, note_id, card) if note_id else None,
                     ),
                     ft.IconButton(
                         icon=ft.Icons.DELETE_OUTLINE,
@@ -685,6 +686,29 @@ def main(page: ft.Page):
         card.bgcolor = new_color
         
         # Atualiza a página inteira ao invés do card individual
+        page.update()
+
+    def archive_note(e, note_id, card):
+        # Atualiza a nota como arquivada no banco de dados
+        db.atualizar_nota(note_id, arquivada=1)
+        
+        # Remove o card da interface
+        # Procura nas notas fixadas
+        for note in pinned_notes_section.controls[1].content.controls:
+            if note.content.content == card:
+                pinned_notes_section.controls[1].content.controls.remove(note)
+                break
+        
+        # Se não encontrou nas fixadas, procura nas normais
+        for note in normal_notes_section.controls[1].content.controls:
+            if note.content.content == card:
+                normal_notes_section.controls[1].content.controls.remove(note)
+                break
+        
+        # Verifica se precisa mostrar o empty state
+        if len(pinned_notes_section.controls[1].content.controls) == 0 and len(normal_notes_section.controls[1].content.controls) == 0:
+            content_area.content.controls[1].content = create_empty_state()
+        
         page.update()
 
     # Seção de notas fixadas atualizada para usar DragTarget
