@@ -1,8 +1,9 @@
 import flet as ft
+from modalviewtrash import handle_view_trash
 
 def create_trash_card(title, content, bgcolor=None, note_id=None, 
                      on_restore=None, on_delete_forever=None, 
-                     on_drag_accept=None, page=None):
+                     on_drag_accept=None, page=None, db=None, trash_section=None):
     """Cria um card de nota na lixeira"""
     
     # Função para criar o conteúdo do card
@@ -15,6 +16,17 @@ def create_trash_card(title, content, bgcolor=None, note_id=None,
                     icon_color="#E2E2E3",
                     icon_size=20,
                     tooltip="Visualizar nota",
+                    on_click=lambda e: handle_view_trash(
+                        page=page,
+                        db=db,
+                        note_id=note_id,
+                        card=card,
+                        trash_section=trash_section,
+                        handlers={
+                            'on_restore': on_restore,
+                            'on_delete_forever': on_delete_forever,
+                        }
+                    ) if db else None,
                 ),
                 ft.IconButton(
                     icon=ft.Icons.RESTORE,

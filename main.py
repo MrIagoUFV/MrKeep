@@ -574,7 +574,9 @@ def main(page: ft.Page):
                 on_restore=handlers['on_restore'],
                 on_delete_forever=handlers['on_delete_forever'],
                 on_drag_accept=handlers['on_drag_accept'],
-                page=page
+                page=page,
+                db=db,  # Passa a instância do banco de dados
+                trash_section=trash_section  # Passa a seção da lixeira
             )
             
             # Adiciona na grade da lixeira
