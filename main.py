@@ -1,5 +1,6 @@
 import flet as ft
 from database import Database
+from navbar import create_navbar
 
 def main(page: ft.Page):
     # Inicializa o banco de dados
@@ -305,43 +306,8 @@ def main(page: ft.Page):
         icon_size=24,
     )
 
-    # Ícone do Keep
-    keep_icon = ft.Image(
-        src="https://www.gstatic.com/images/branding/product/1x/keep_2020q4_48dp.png",
-        width=40,
-        height=40,
-        fit=ft.ImageFit.CONTAIN,
-    )
-
-    # Título
-    title = ft.Text(
-        "MrKeep",
-        color="#E2E2E3",
-        size=20,
-        weight=ft.FontWeight.W_500
-    )
-
-    # Navbar
-    navbar = ft.Container(
-        content=ft.Row(
-            [
-                # Grupo da esquerda
-                ft.Row(
-                    [menu_button, keep_icon, title],
-                    spacing=10,
-                ),
-                # Grupo da direita
-                exit_button,
-            ],
-            spacing=10,
-            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-            vertical_alignment=ft.CrossAxisAlignment.CENTER,
-        ),
-        padding=ft.padding.only(left=10, right=10),
-        height=64,
-        bgcolor="#202124",
-        border=ft.border.only(bottom=ft.BorderSide(1, "#525355"))
-    )
+    # Navbar usando o módulo navbar.py
+    navbar = create_navbar(menu_button, exit_button)
 
     # Menu Items
     def create_menu_item(icon, text, selected=False):
