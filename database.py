@@ -98,10 +98,20 @@ class Database:
     def listar_notas(self, arquivadas=False, lixeira=False):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            query = """
-                SELECT * FROM notas 
-                WHERE arquivada = ? AND lixeira = ?
-                ORDER BY fixada DESC, dataUltimaModificacao DESC, horaUltimaModificacao DESC
-            """
-            cursor.execute(query, (1 if arquivadas else 0, 1 if lixeira else 0))
+            if lixeira:
+                # Se estiver listando notas da lixeira, não importa se está arquivada ou não
+                query = """
+                    SELECT * FROM notas 
+                    WHERE lixeira = 1
+                    ORDER BY dataUltimaModificacao DESC, horaUltimaModificacao DESC
+                """
+                cursor.execute(query)
+            else:
+                # Se não estiver listando notas da lixeira, filtra por arquivada e lixeira = 0
+                query = """
+                    SELECT * FROM notas 
+                    WHERE arquivada = ? AND lixeira = 0
+                    ORDER BY fixada DESC, dataUltimaModificacao DESC, horaUltimaModificacao DESC
+                """
+                cursor.execute(query, (1 if arquivadas else 0,))
             return cursor.fetchall() 
