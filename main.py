@@ -116,6 +116,40 @@ def main(page: ft.Page):
         nonlocal note_content
         note_content = e.control.value
 
+    def add_note(e):
+        nonlocal note_title, note_content, is_pinned, note_color
+        if note_title.strip():  # Só cria se tiver título
+            # Salva no banco
+            nota = db.criar_nota(
+                titulo=note_title,
+                conteudo=note_content,
+                cor_fundo=note_color
+            )
+            
+            if is_pinned:
+                db.atualizar_nota(nota['id'], fixada=1)
+                nota['fixada'] = 1
+            
+            # Cria o card
+            card = create_note_card(
+                title=nota['titulo'],
+                content=nota['conteudo'],
+                is_pinned=is_pinned,
+                bgcolor=nota['corFundo']
+            )
+            
+            # Adiciona na grade apropriada
+            if is_pinned:
+                pinned_notes_section.controls[1].content.controls.append(card)
+            else:
+                normal_notes_section.controls[1].content.controls.append(card)
+                
+            # Fecha o input
+            close_note(e)
+            
+            # Atualiza a UI
+            page.update()
+
     def create_collapsed_input():
         return ft.Container(
             content=ft.TextField(
@@ -210,13 +244,24 @@ def main(page: ft.Page):
                             ])
                         ],
                     ),
-                    ft.TextButton(
-                        text="Fechar",
-                        style=ft.ButtonStyle(
-                            color="#E2E2E3",
+                    ft.Row([
+                        ft.ElevatedButton(
+                            "Criar",
+                            icon=ft.icons.ADD,
+                            on_click=add_note,
+                            style=ft.ButtonStyle(
+                                color="#E2E2E3",
+                                bgcolor="#1E6F50"  # Cor verde para destacar ação principal
+                            ),
                         ),
-                        on_click=close_note,
-                    ),
+                        ft.TextButton(
+                            text="Fechar",
+                            style=ft.ButtonStyle(
+                                color="#E2E2E3",
+                            ),
+                            on_click=close_note,
+                        ),
+                    ], spacing=10),
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
             ]),
             bgcolor=note_color,  # Usa a cor atual da nota
@@ -675,6 +720,28 @@ def main(page: ft.Page):
         expand=True,
     )
 
+    def load_notes():
+        # Carrega todas as notas ativas (não arquivadas e não na lixeira)
+        notas = db.listar_notas()
+        
+        for nota in notas:
+            # Cria o card
+            card = create_note_card(
+                title=nota[1],  # titulo
+                content=nota[2],  # conteudo
+                is_pinned=bool(nota[7]),  # fixada
+                bgcolor=nota[8]  # corFundo
+            )
+            
+            # Adiciona na grade apropriada
+            if nota[7]:  # fixada
+                pinned_notes_section.controls[1].content.controls.append(card)
+            else:
+                normal_notes_section.controls[1].content.controls.append(card)
+    
+    # Carrega as notas existentes
+    load_notes()
+    
     # Adiciona o container principal à página (ao invs de apenas a navbar)
     page.add(main_container)
     
