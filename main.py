@@ -512,11 +512,11 @@ def main(page: ft.Page):
                     action_buttons,
                 ], spacing=10),
                 width=240,
-                height=240,  # Aumentando a altura do card para 240px
+                height=240,
                 padding=15,
                 border_radius=10,
                 bgcolor=bgcolor if bgcolor else ("#1E6F50" if is_pinned else "#28292C"),
-                data=title,  # Usa o título como identificador
+                data=title,
             )
 
         # Cria o card principal
@@ -524,16 +524,20 @@ def main(page: ft.Page):
 
         def on_hover(e):
             is_hovering = e.data == "true"
-            pin_button.opacity = 1 if is_hovering or is_pinned else 0
-            action_buttons.opacity = 1 if is_hovering else 0
-            card.update()
+            if is_hovering or is_pinned:
+                pin_button.opacity = 1
+                action_buttons.opacity = 1
+            else:
+                pin_button.opacity = 0
+                action_buttons.opacity = 0
+            page.update()
 
         card.on_hover = on_hover
 
         # Container invisível para mostrar durante o drag
         placeholder = ft.Container(
             width=240,
-            height=260,  # 240px do card + 20px de espaçamento (10px em cima e 10px embaixo)
+            height=260,
             opacity=0,
         )
 
@@ -570,7 +574,7 @@ def main(page: ft.Page):
             padding=15,
             border_radius=10,
             bgcolor=bgcolor if bgcolor else ("#1E6F50" if is_pinned else "#28292C"),
-            margin=ft.margin.only(bottom=20),  # Adiciona margem inferior para simular o espaçamento da grade
+            margin=ft.margin.only(bottom=20),
         )
 
         # Cria o DragTarget que vai envolver o card
@@ -584,8 +588,8 @@ def main(page: ft.Page):
         return ft.Draggable(
             group="notes",
             content=drag_target,
-            content_when_dragging=placeholder,  # Container invisível no lugar original
-            content_feedback=feedback_card,  # Mostra o card inteiro durante o drag
+            content_when_dragging=placeholder,
+            content_feedback=feedback_card,
         )
 
     def handle_drag_accept(e, target_card):
