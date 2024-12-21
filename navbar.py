@@ -1,17 +1,43 @@
 import flet as ft
 
-def create_navbar(menu_button, exit_button):
-    # Ícone do Keep
-    keep_icon = ft.Image(
-        src="https://www.gstatic.com/images/branding/product/1x/keep_2020q4_48dp.png",
-        width=40,
-        height=40,
-        fit=ft.ImageFit.CONTAIN,
+def get_page_info(page_name):
+    pages = {
+        "notas": {
+            "icon": "https://www.gstatic.com/images/branding/product/1x/keep_2020q4_48dp.png",
+            "title": "MrKeep"
+        },
+        "arquivo": {
+            "icon": ft.icons.ARCHIVE_OUTLINED,
+            "title": "Arquivo"
+        },
+        "lixeira": {
+            "icon": ft.icons.DELETE_OUTLINE,
+            "title": "Lixeira"
+        }
+    }
+    return pages.get(page_name, pages["notas"])
+
+def create_navbar(menu_button, exit_button, current_page="notas"):
+    page_info = get_page_info(current_page)
+    
+    # Ícone da página
+    page_icon = (
+        ft.Image(
+            src=page_info["icon"],
+            width=40,
+            height=40,
+            fit=ft.ImageFit.CONTAIN,
+        ) if current_page == "notas" else
+        ft.Icon(
+            name=page_info["icon"],
+            size=40,
+            color="#E2E2E3",
+        )
     )
 
     # Título
     title = ft.Text(
-        "MrKeep",
+        page_info["title"],
         color="#E2E2E3",
         size=20,
         weight=ft.FontWeight.W_500
@@ -23,7 +49,7 @@ def create_navbar(menu_button, exit_button):
             [
                 # Grupo da esquerda
                 ft.Row(
-                    [menu_button, keep_icon, title],
+                    [menu_button, page_icon, title],
                     spacing=10,
                 ),
                 # Grupo da direita

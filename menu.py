@@ -1,6 +1,6 @@
 import flet as ft
 
-def create_menu_item(icon, text, selected=False, menu_expanded=False):
+def create_menu_item(icon, text, selected=False, menu_expanded=False, on_click=None):
     # Estilo quando fechado (72px)
     def get_collapsed_style():
         container = ft.Container(
@@ -24,6 +24,7 @@ def create_menu_item(icon, text, selected=False, menu_expanded=False):
             ),
             padding=ft.padding.only(left=12, top=4, bottom=4),
             animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
+            on_click=on_click,
         )
 
         if not selected:
@@ -68,6 +69,7 @@ def create_menu_item(icon, text, selected=False, menu_expanded=False):
             ),
             margin=ft.margin.only(right=8),
             animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
+            on_click=on_click,
         )
 
         if not selected:
@@ -80,7 +82,7 @@ def create_menu_item(icon, text, selected=False, menu_expanded=False):
 
     return get_expanded_style() if menu_expanded else get_collapsed_style()
 
-def create_side_menu(menu_expanded, handle_menu_hover):
+def create_side_menu(menu_expanded, handle_menu_hover, selected_page="notas", on_page_change=None):
     return ft.Container(
         width=72 if not menu_expanded else 280,
         bgcolor="#202124",
@@ -89,9 +91,27 @@ def create_side_menu(menu_expanded, handle_menu_hover):
         padding=ft.padding.only(top=8, right=0, left=0),
         content=ft.Column(
             [
-                create_menu_item(ft.Icons.LIGHTBULB_OUTLINE, "Notas", selected=True, menu_expanded=menu_expanded),
-                create_menu_item(ft.Icons.ARCHIVE_OUTLINED, "Arquivo", menu_expanded=menu_expanded),
-                create_menu_item(ft.Icons.DELETE_OUTLINE, "Lixeira", menu_expanded=menu_expanded),
+                create_menu_item(
+                    ft.Icons.LIGHTBULB_OUTLINE, 
+                    "Notas", 
+                    selected=selected_page == "notas", 
+                    menu_expanded=menu_expanded,
+                    on_click=lambda _: on_page_change("notas") if on_page_change else None
+                ),
+                create_menu_item(
+                    ft.Icons.ARCHIVE_OUTLINED, 
+                    "Arquivo", 
+                    selected=selected_page == "arquivo", 
+                    menu_expanded=menu_expanded,
+                    on_click=lambda _: on_page_change("arquivo") if on_page_change else None
+                ),
+                create_menu_item(
+                    ft.Icons.DELETE_OUTLINE, 
+                    "Lixeira", 
+                    selected=selected_page == "lixeira", 
+                    menu_expanded=menu_expanded,
+                    on_click=lambda _: on_page_change("lixeira") if on_page_change else None
+                ),
             ],
             spacing=8,  # Espaçamento entre itens
         ),

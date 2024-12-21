@@ -5,6 +5,8 @@ from menu import create_menu_item, create_side_menu
 from addnota import create_note_input, note_colors
 from cardnotas import create_note_card
 from viewnotas import create_view_notas
+from viewarq import create_view_arquivo
+from viewtrash import create_view_lixeira
 from notesections import create_notes_section
 from noteoperations import handle_drag_accept, create_note_card_from_data, remove_note_from_sections
 
@@ -22,6 +24,7 @@ def main(page: ft.Page):
 
     # Estado do menu
     menu_expanded = False
+    current_page = "notas"  # Estado da página atual
 
     # Estado do input de notas
     input_expanded = False
@@ -37,13 +40,7 @@ def main(page: ft.Page):
         
         # Atualiza o menu lateral com os novos estilos
         side_menu.width = 280 if menu_expanded else 72
-        side_menu.content.controls = [
-            create_menu_item(ft.Icons.LIGHTBULB_OUTLINE, "Notas", selected=True, menu_expanded=menu_expanded),
-            create_menu_item(ft.Icons.ARCHIVE_OUTLINED, "Arquivo", menu_expanded=menu_expanded),
-            create_menu_item(ft.Icons.DELETE_OUTLINE, "Lixeira", menu_expanded=menu_expanded),
-        ]
-        
-        side_menu.update()
+        update_side_menu()
         page.update()
 
     def exit_app(e):
@@ -61,15 +58,46 @@ def main(page: ft.Page):
         menu_button.icon = ft.Icons.CLOSE if menu_expanded else ft.Icons.MENU
         side_menu.width = 280 if menu_expanded else 72
         
-        # Recria os itens do menu com o estilo apropriado
-        side_menu.content.controls = [
-            create_menu_item(ft.Icons.LIGHTBULB_OUTLINE, "Notas", selected=True, menu_expanded=menu_expanded),
-            create_menu_item(ft.Icons.ARCHIVE_OUTLINED, "Arquivo", menu_expanded=menu_expanded),
-            create_menu_item(ft.Icons.DELETE_OUTLINE, "Lixeira", menu_expanded=menu_expanded),
-        ]
-        
-        side_menu.update()
+        update_side_menu()
         page.update()
+
+    def handle_page_change(new_page):
+        nonlocal current_page
+        current_page = new_page
+        update_side_menu()
+        update_navbar()
+        update_content_area()
+        page.update()
+
+    def update_side_menu():
+        side_menu.content.controls = [
+            create_menu_item(
+                ft.Icons.LIGHTBULB_OUTLINE, 
+                "Notas", 
+                selected=current_page == "notas", 
+                menu_expanded=menu_expanded,
+                on_click=lambda _: handle_page_change("notas")
+            ),
+            create_menu_item(
+                ft.Icons.ARCHIVE_OUTLINED, 
+                "Arquivo", 
+                selected=current_page == "arquivo", 
+                menu_expanded=menu_expanded,
+                on_click=lambda _: handle_page_change("arquivo")
+            ),
+            create_menu_item(
+                ft.Icons.DELETE_OUTLINE, 
+                "Lixeira", 
+                selected=current_page == "lixeira", 
+                menu_expanded=menu_expanded,
+                on_click=lambda _: handle_page_change("lixeira")
+            ),
+        ]
+        side_menu.update()
+
+    def update_navbar():
+        navbar.content = create_navbar(menu_button, exit_button, current_page).content
+        navbar.update()
 
     def toggle_input(e):
         nonlocal input_expanded
@@ -198,22 +226,27 @@ def main(page: ft.Page):
             page.update()
 
     def update_content_area():
-        content_area.content = create_view_notas(
-            input_expanded=input_expanded,
-            note_color=note_color,
-            is_pinned=is_pinned,
-            note_title=note_title,
-            note_content=note_content,
-            toggle_input=toggle_input,
-            toggle_pin=toggle_pin,
-            change_color=change_color,
-            update_title=update_title,
-            update_content=update_content,
-            add_note=add_note,
-            close_note=close_note,
-            pinned_notes_section=pinned_notes_section,
-            normal_notes_section=normal_notes_section,
-        ).content
+        if current_page == "notas":
+            content_area.content = create_view_notas(
+                input_expanded=input_expanded,
+                note_color=note_color,
+                is_pinned=is_pinned,
+                note_title=note_title,
+                note_content=note_content,
+                toggle_input=toggle_input,
+                toggle_pin=toggle_pin,
+                change_color=change_color,
+                update_title=update_title,
+                update_content=update_content,
+                add_note=add_note,
+                close_note=close_note,
+                pinned_notes_section=pinned_notes_section,
+                normal_notes_section=normal_notes_section,
+            ).content
+        elif current_page == "arquivo":
+            content_area.content = create_view_arquivo().content
+        else:  # lixeira
+            content_area.content = create_view_lixeira().content
 
     def update_note_input():
         update_content_area()
@@ -236,10 +269,21 @@ def main(page: ft.Page):
     )
 
     # Navbar usando o módulo navbar.py
-    navbar = create_navbar(menu_button, exit_button)
+    navbar = ft.Container(
+        content=create_navbar(menu_button, exit_button, current_page).content,
+        padding=ft.padding.only(left=10, right=10),
+        height=64,
+        bgcolor="#202124",
+        border=ft.border.only(bottom=ft.BorderSide(1, "#525355"))
+    )
 
     # Menu Lateral usando o módulo menu.py
-    side_menu = create_side_menu(menu_expanded, handle_menu_hover)
+    side_menu = create_side_menu(
+        menu_expanded=menu_expanded, 
+        handle_menu_hover=handle_menu_hover,
+        selected_page=current_page,
+        on_page_change=handle_page_change
+    )
 
     # Seções de notas usando o módulo notesections.py
     pinned_notes_section = create_notes_section("FIXADAS", True)
