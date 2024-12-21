@@ -4,27 +4,26 @@ from datetime import datetime
 
 class Database:
     def __init__(self):
-        self.conn = sqlite3.connect('mrkeep.db')
-        self.cursor = self.conn.cursor()
-        self.criar_tabela()
-    
-    def criar_tabela(self):
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS notas (
-                id TEXT PRIMARY KEY,
-                titulo TEXT,
-                conteudo TEXT,
-                dataCriacao TEXT,
-                horaCriacao TEXT,
-                dataUltimaModificacao TEXT,
-                horaUltimaModificacao TEXT,
-                fixada INTEGER,
-                corFundo TEXT,
-                arquivada INTEGER,
-                lixeira INTEGER
-            )
-        ''')
-        self.conn.commit()
+        self.db_path = 'mrkeep.db'
+        # Cria a tabela na inicialização
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS notas (
+                    id TEXT PRIMARY KEY,
+                    titulo TEXT,
+                    conteudo TEXT,
+                    dataCriacao TEXT,
+                    horaCriacao TEXT,
+                    dataUltimaModificacao TEXT,
+                    horaUltimaModificacao TEXT,
+                    fixada INTEGER,
+                    corFundo TEXT,
+                    arquivada INTEGER,
+                    lixeira INTEGER
+                )
+            ''')
+            conn.commit()
     
     def criar_nota(self, titulo="", conteudo="", cor_fundo="#202124"):
         agora = datetime.now()
@@ -45,21 +44,23 @@ class Database:
             'lixeira': 0
         }
         
-        self.cursor.execute('''
-            INSERT INTO notas (
-                id, titulo, conteudo, dataCriacao, horaCriacao,
-                dataUltimaModificacao, horaUltimaModificacao,
-                fixada, corFundo, arquivada, lixeira
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            nota['id'], nota['titulo'], nota['conteudo'],
-            nota['dataCriacao'], nota['horaCriacao'],
-            nota['dataUltimaModificacao'], nota['horaUltimaModificacao'],
-            nota['fixada'], nota['corFundo'],
-            nota['arquivada'], nota['lixeira']
-        ))
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO notas (
+                    id, titulo, conteudo, dataCriacao, horaCriacao,
+                    dataUltimaModificacao, horaUltimaModificacao,
+                    fixada, corFundo, arquivada, lixeira
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                nota['id'], nota['titulo'], nota['conteudo'],
+                nota['dataCriacao'], nota['horaCriacao'],
+                nota['dataUltimaModificacao'], nota['horaUltimaModificacao'],
+                nota['fixada'], nota['corFundo'],
+                nota['arquivada'], nota['lixeira']
+            ))
+            conn.commit()
         
-        self.conn.commit()
         return nota
     
     def atualizar_nota(self, id, **kwargs):
@@ -76,26 +77,31 @@ class Database:
         
         valores.append(id)  # Adiciona o ID para a cláusula WHERE
         
-        query = f"UPDATE notas SET {', '.join(campos)} WHERE id = ?"
-        self.cursor.execute(query, valores)
-        self.conn.commit()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            query = f"UPDATE notas SET {', '.join(campos)} WHERE id = ?"
+            cursor.execute(query, valores)
+            conn.commit()
     
     def excluir_nota(self, id):
-        self.cursor.execute("DELETE FROM notas WHERE id = ?", (id,))
-        self.conn.commit()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM notas WHERE id = ?", (id,))
+            conn.commit()
     
     def obter_nota(self, id):
-        self.cursor.execute("SELECT * FROM notas WHERE id = ?", (id,))
-        return self.cursor.fetchone()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM notas WHERE id = ?", (id,))
+            return cursor.fetchone()
     
     def listar_notas(self, arquivadas=False, lixeira=False):
-        query = """
-            SELECT * FROM notas 
-            WHERE arquivada = ? AND lixeira = ?
-            ORDER BY fixada DESC, dataUltimaModificacao DESC, horaUltimaModificacao DESC
-        """
-        self.cursor.execute(query, (1 if arquivadas else 0, 1 if lixeira else 0))
-        return self.cursor.fetchall()
-    
-    def __del__(self):
-        self.conn.close() 
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            query = """
+                SELECT * FROM notas 
+                WHERE arquivada = ? AND lixeira = ?
+                ORDER BY fixada DESC, dataUltimaModificacao DESC, horaUltimaModificacao DESC
+            """
+            cursor.execute(query, (1 if arquivadas else 0, 1 if lixeira else 0))
+            return cursor.fetchall() 

@@ -247,7 +247,7 @@ def main(page: ft.Page):
                     ft.Row([
                         ft.ElevatedButton(
                             "Criar",
-                            icon=ft.icons.ADD,
+                            icon=ft.Icons.ADD,
                             on_click=add_note,
                             style=ft.ButtonStyle(
                                 color="#E2E2E3",
