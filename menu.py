@@ -3,23 +3,23 @@ import flet as ft
 def create_menu_item(icon, text, selected=False, menu_expanded=False, on_click=None):
     # Estilo quando fechado (72px)
     def get_collapsed_style():
+        icon_container = ft.Container(
+            content=ft.Icon(
+                name=icon,
+                size=24,
+                color="#E2E2E3",
+            ),
+            bgcolor="#41331C" if selected else None,
+            padding=ft.padding.all(12),
+            border_radius=ft.border_radius.all(50),
+            width=48,
+            height=48,
+            alignment=ft.alignment.center,
+        )
+
         container = ft.Container(
             content=ft.Row(
-                [
-                    ft.Container(
-                        content=ft.Icon(
-                            name=icon,
-                            size=24,
-                            color="#E2E2E3",
-                        ),
-                        bgcolor="#41331C" if selected else None,
-                        padding=ft.padding.all(12),
-                        border_radius=ft.border_radius.all(50),
-                        width=48,
-                        height=48,
-                        alignment=ft.alignment.center,
-                    ),
-                ],
+                [icon_container],
                 alignment=ft.MainAxisAlignment.START,
             ),
             padding=ft.padding.only(left=12, top=4, bottom=4),
@@ -29,8 +29,8 @@ def create_menu_item(icon, text, selected=False, menu_expanded=False, on_click=N
 
         if not selected:
             def handle_hover(e):
-                container.content.controls[0].bgcolor = "#3C3C3C" if e.data == "true" else None
-                container.content.update()
+                icon_container.bgcolor = "#3C3C3C" if e.data == "true" else None
+                container.update()
             container.on_hover = handle_hover
 
         return container
