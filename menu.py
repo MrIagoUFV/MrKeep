@@ -84,11 +84,13 @@ def create_menu_item(icon, text, selected=False, menu_expanded=False, on_click=N
 
     return get_expanded_style() if menu_expanded else get_collapsed_style()
 
-def create_side_menu(menu_expanded, handle_menu_hover, selected_page="notas", on_page_change=None, page=None):
-    return ft.Container(
+def create_side_menu(menu_expanded=False, handle_menu_hover=None, selected_page="notas", on_page_change=None, page=None):
+    """Cria o menu lateral"""
+    
+    # Container do menu lateral
+    side_menu = ft.Container(
         width=72 if not menu_expanded else 280,
         bgcolor="#202124",
-        border=ft.border.only(right=ft.BorderSide(1, "#525355")),
         animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
         padding=ft.padding.only(top=8, right=0, left=0),
         content=ft.Column(
@@ -121,4 +123,6 @@ def create_side_menu(menu_expanded, handle_menu_hover, selected_page="notas", on
             spacing=8,  # Espaçamento entre itens
         ),
         on_hover=handle_menu_hover,
-    ) 
+    )
+    
+    return side_menu
