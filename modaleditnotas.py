@@ -174,81 +174,85 @@ def create_edit_modal(
                     size=14,
                 ),
                 width=600,
-                height=120,
+                expand=True,
                 multiline=True,
                 min_lines=1,
-                max_lines=20,
+                max_lines=None,
                 on_change=update_content,
             ),
 
             # Barra inferior com ícones
-            ft.Row([
-                # Grupo de ícones da esquerda
-                ft.Row([
-                    ft.PopupMenuButton(
-                        icon=ft.Icons.PALETTE_OUTLINED,
-                        icon_color="#E2E2E3",
-                        icon_size=20,
-                        tooltip="Mudar cor de fundo",
-                        items=[
-                            ft.PopupMenuItem(
-                                content=ft.Row([
-                                    ft.Container(
-                                        bgcolor=color,
-                                        width=24,
-                                        height=24,
-                                        border_radius=50,
-                                    ),
-                                    ft.Text(name, color="#E2E2E3", size=14),
-                                ], spacing=10),
-                                on_click=lambda e, c=color: change_color(e, c)
-                            ) for color, name in zip(note_colors, [
-                                "Cinza padrão", "Verde", "Marrom", "Bege escuro",
-                                "Vermelho escuro", "Cinza escuro", "Azul escuro", "Roxo escuro"
-                            ])
-                        ],
-                    ),
-                    ft.IconButton(
-                        icon=ft.Icons.ARCHIVE_OUTLINED,
-                        icon_color="#E2E2E3",
-                        icon_size=20,
-                        tooltip="Arquivar nota",
-                        on_click=on_archive,
-                    ),
-                    ft.IconButton(
-                        icon=ft.Icons.DELETE_OUTLINE,
-                        icon_color="#E2E2E3",
-                        icon_size=20,
-                        tooltip="Excluir nota",
-                        on_click=on_delete,
-                    ),
-                ], spacing=0),
+            ft.Container(
+                content=ft.Row([
+                    # Grupo de ícones da esquerda
+                    ft.Row([
+                        ft.PopupMenuButton(
+                            icon=ft.Icons.PALETTE_OUTLINED,
+                            icon_color="#E2E2E3",
+                            icon_size=20,
+                            tooltip="Mudar cor de fundo",
+                            items=[
+                                ft.PopupMenuItem(
+                                    content=ft.Row([
+                                        ft.Container(
+                                            bgcolor=color,
+                                            width=24,
+                                            height=24,
+                                            border_radius=50,
+                                        ),
+                                        ft.Text(name, color="#E2E2E3", size=14),
+                                    ], spacing=10),
+                                    on_click=lambda e, c=color: change_color(e, c)
+                                ) for color, name in zip(note_colors, [
+                                    "Cinza padrão", "Verde", "Marrom", "Bege escuro",
+                                    "Vermelho escuro", "Cinza escuro", "Azul escuro", "Roxo escuro"
+                                ])
+                            ],
+                        ),
+                        ft.IconButton(
+                            icon=ft.Icons.ARCHIVE_OUTLINED,
+                            icon_color="#E2E2E3",
+                            icon_size=20,
+                            tooltip="Arquivar nota",
+                            on_click=on_archive,
+                        ),
+                        ft.IconButton(
+                            icon=ft.Icons.DELETE_OUTLINE,
+                            icon_color="#E2E2E3",
+                            icon_size=20,
+                            tooltip="Excluir nota",
+                            on_click=on_delete,
+                        ),
+                    ], spacing=0),
 
-                # Grupo de botões da direita
-                ft.Row([
-                    ft.ElevatedButton(
-                        "Salvar",
-                        icon=ft.Icons.SAVE,
-                        on_click=lambda e: save_note(e, note_id),
-                        style=ft.ButtonStyle(
-                            color="#E2E2E3",
-                            bgcolor="#1E6F50"
+                    # Grupo de botões da direita
+                    ft.Row([
+                        ft.ElevatedButton(
+                            "Salvar",
+                            icon=ft.Icons.SAVE,
+                            on_click=lambda e: save_note(e, note_id),
+                            style=ft.ButtonStyle(
+                                color="#E2E2E3",
+                                bgcolor="#1E6F50"
+                            ),
                         ),
-                    ),
-                    ft.TextButton(
-                        text="Fechar",
-                        style=ft.ButtonStyle(
-                            color="#E2E2E3",
+                        ft.TextButton(
+                            text="Fechar",
+                            style=ft.ButtonStyle(
+                                color="#E2E2E3",
+                            ),
+                            on_click=close_modal,
                         ),
-                        on_click=close_modal,
-                    ),
-                ], spacing=10),
-            ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-        ]),
+                    ], spacing=10),
+                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                padding=ft.padding.only(top=10),
+            ),
+        ], spacing=0),
         bgcolor=note_color,
         padding=10,
         border_radius=10,
         width=600,
+        height=500,
     )
 
     # Cria o AlertDialog
