@@ -345,7 +345,8 @@ def main(page: ft.Page):
         menu_expanded=menu_expanded, 
         handle_menu_hover=handle_menu_hover,
         selected_page=current_page,
-        on_page_change=handle_page_change
+        on_page_change=handle_page_change,
+        page=page
     )
 
     # Seções de notas usando o módulo notesections.py
