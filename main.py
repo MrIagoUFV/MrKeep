@@ -544,7 +544,7 @@ def main(page: ft.Page):
 
         def on_hover(e):
             is_hovering = e.data == "true"
-            if is_hovering or is_pinned:
+            if is_hovering:
                 pin_button.opacity = 1
                 card.content.controls[-1].opacity = 1  # action_buttons
             else:
