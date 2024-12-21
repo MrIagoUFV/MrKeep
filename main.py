@@ -462,11 +462,28 @@ def main(page: ft.Page):
             # Cria os botões de ação
             action_buttons = ft.Row(
                 [
-                    ft.IconButton(
+                    ft.PopupMenuButton(
                         icon=ft.Icons.PALETTE_OUTLINED,
                         icon_color="#E2E2E3",
                         icon_size=20,
                         tooltip="Mudar cor de fundo",
+                        items=[
+                            ft.PopupMenuItem(
+                                content=ft.Row([
+                                    ft.Container(
+                                        bgcolor=color,
+                                        width=24,
+                                        height=24,
+                                        border_radius=50,
+                                    ),
+                                    ft.Text(name, color="#E2E2E3", size=14),
+                                ], spacing=10),
+                                on_click=lambda e, c=color: change_note_color(e, note_id, card, c) if note_id else None
+                            ) for color, name in zip(note_colors, [
+                                "Cinza padrão", "Verde", "Marrom", "Bege escuro",
+                                "Vermelho escuro", "Cinza escuro", "Azul escuro", "Roxo escuro"
+                            ])
+                        ],
                     ),
                     ft.IconButton(
                         icon=ft.Icons.ARCHIVE_OUTLINED,
@@ -658,6 +675,16 @@ def main(page: ft.Page):
         if len(pinned_notes_section.controls[1].content.controls) == 0 and len(normal_notes_section.controls[1].content.controls) == 0:
             content_area.content.controls[1].content = create_empty_state()
         
+        page.update()
+
+    def change_note_color(e, note_id, card, new_color):
+        # Atualiza a cor no banco de dados
+        db.atualizar_nota(note_id, corFundo=new_color)
+        
+        # Atualiza a cor do card na interface
+        card.bgcolor = new_color
+        
+        # Atualiza a página inteira ao invés do card individual
         page.update()
 
     # Seção de notas fixadas atualizada para usar DragTarget
