@@ -167,7 +167,8 @@ def main(page: ft.Page):
             e, 
             target_card, 
             pinned_notes_section.controls[1].content,
-            normal_notes_section.controls[1].content
+            normal_notes_section.controls[1].content,
+            db
         )
 
     def delete_note(e, note_id, card):
@@ -329,14 +330,23 @@ def main(page: ft.Page):
                 'on_edit': handle_note_edit
             }
             
-            card = create_note_card_from_data([
-                nota['id'],
-                nota['titulo'],
-                nota['conteudo'],
-                None, None, None, None,
-                nota.get('fixada', 0),
-                nota['corFundo']
-            ], handlers, page)
+            card = create_note_card(
+                title=nota['titulo'],
+                content=nota['conteudo'],
+                is_pinned=bool(nota.get('fixada', 0)),
+                bgcolor=nota['corFundo'],
+                note_id=nota['id'],
+                on_color_change=handlers['on_color_change'],
+                on_archive=handlers['on_archive'],
+                on_delete=handlers['on_delete'],
+                on_drag_accept=handlers['on_drag_accept'],
+                on_pin=handlers['on_pin'],
+                on_edit=handlers['on_edit'],
+                page=page,
+                db=db,
+                pinned_section=pinned_notes_section,
+                normal_section=normal_notes_section
+            )
             
             # Adiciona na grade apropriada
             if is_pinned:
@@ -482,14 +492,23 @@ def main(page: ft.Page):
             'on_edit': handle_note_edit
         }
         
-        novo_card = create_note_card_from_data([
-            nota[0],  # id
-            nota[1],  # titulo
-            nota[2],  # conteudo
-            None, None, None, None,
-            novo_estado,  # fixada
-            nota[8]  # corFundo
-        ], handlers, page)
+        novo_card = create_note_card(
+            title=nota[1],  # titulo
+            content=nota[2],  # conteudo
+            is_pinned=novo_estado,
+            bgcolor=nota[8],  # corFundo
+            note_id=nota[0],  # id
+            on_color_change=handlers['on_color_change'],
+            on_archive=handlers['on_archive'],
+            on_delete=handlers['on_delete'],
+            on_drag_accept=handlers['on_drag_accept'],
+            on_pin=handlers['on_pin'],
+            on_edit=handlers['on_edit'],
+            page=page,
+            db=db,
+            pinned_section=pinned_notes_section,
+            normal_section=normal_notes_section
+        )
         
         # Adiciona na seção apropriada
         if novo_estado:
@@ -531,7 +550,23 @@ def main(page: ft.Page):
         
         for nota in notas:
             # Cria o card
-            card = create_note_card_from_data(nota, handlers, page)
+            card = create_note_card(
+                title=nota[1],  # titulo
+                content=nota[2],  # conteudo
+                is_pinned=bool(nota[7]),  # fixada
+                bgcolor=nota[8],  # corFundo
+                note_id=nota[0],  # id
+                on_color_change=handlers['on_color_change'],
+                on_archive=handlers['on_archive'],
+                on_delete=handlers['on_delete'],
+                on_drag_accept=handlers['on_drag_accept'],
+                on_pin=handlers['on_pin'],
+                on_edit=handlers['on_edit'],
+                page=page,
+                db=db,
+                pinned_section=pinned_notes_section,
+                normal_section=normal_notes_section
+            )
             
             # Adiciona na grade apropriada
             if nota[7]:  # fixada
