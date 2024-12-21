@@ -54,6 +54,7 @@ def create_note_card_from_data(nota, handlers, page):
         on_delete=handlers['on_delete'],
         on_drag_accept=handlers['on_drag_accept'],
         on_pin=handlers['on_pin'],
+        on_edit=handlers['on_edit'],
         page=page
     )
 

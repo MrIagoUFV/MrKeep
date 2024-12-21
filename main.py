@@ -13,6 +13,7 @@ from notesections import create_notes_section
 from arquivosections import create_archive_section
 from lixeirasections import create_trash_section
 from noteoperations import handle_drag_accept, create_note_card_from_data, remove_note_from_sections
+from modaleditnotas import handle_edit_note
 
 def main(page: ft.Page):
     # Inicializa o banco de dados
@@ -36,6 +37,14 @@ def main(page: ft.Page):
     is_pinned = False  # Estado de fixação da nota em criação
     note_title = ""  # Estado do título da nota
     note_content = ""  # Estado do conteúdo da nota
+
+    # Estado do modal de edição
+    edit_dialog = None
+    edit_note_id = None
+    edit_note_title = ""
+    edit_note_content = ""
+    edit_note_color = "#28292C"
+    edit_is_pinned = False
 
     def toggle_menu(e):
         nonlocal menu_expanded
@@ -313,7 +322,8 @@ def main(page: ft.Page):
                 'on_archive': archive_note,
                 'on_delete': delete_note,
                 'on_drag_accept': handle_note_drag_accept,
-                'on_pin': toggle_pin_note
+                'on_pin': toggle_pin_note,
+                'on_edit': handle_note_edit
             }
             
             card = create_note_card_from_data([
@@ -465,7 +475,8 @@ def main(page: ft.Page):
             'on_archive': archive_note,
             'on_delete': delete_note,
             'on_drag_accept': handle_note_drag_accept,
-            'on_pin': toggle_pin_note
+            'on_pin': toggle_pin_note,
+            'on_edit': handle_note_edit
         }
         
         novo_card = create_note_card_from_data([
@@ -487,6 +498,17 @@ def main(page: ft.Page):
         update_content_area()
         page.update()
 
+    def handle_note_edit(e, note_id, card):
+        handlers = {
+            'on_color_change': change_note_color,
+            'on_archive': archive_note,
+            'on_delete': delete_note,
+            'on_drag_accept': handle_note_drag_accept,
+            'on_pin': toggle_pin_note,
+            'on_edit': handle_note_edit
+        }
+        handle_edit_note(page, db, note_id, card, pinned_notes_section, normal_notes_section, handlers)
+
     def load_notes():
         # Carrega todas as notas ativas (não arquivadas e não na lixeira)
         notas = db.listar_notas()
@@ -500,7 +522,8 @@ def main(page: ft.Page):
             'on_archive': archive_note,
             'on_delete': delete_note,
             'on_drag_accept': handle_note_drag_accept,
-            'on_pin': toggle_pin_note
+            'on_pin': toggle_pin_note,
+            'on_edit': handle_note_edit
         }
         
         for nota in notas:
