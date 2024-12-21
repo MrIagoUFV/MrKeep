@@ -312,7 +312,8 @@ def main(page: ft.Page):
                 'on_color_change': change_note_color,
                 'on_archive': archive_note,
                 'on_delete': delete_note,
-                'on_drag_accept': handle_note_drag_accept
+                'on_drag_accept': handle_note_drag_accept,
+                'on_pin': toggle_pin_note
             }
             
             card = create_note_card_from_data([
@@ -447,6 +448,45 @@ def main(page: ft.Page):
         expand=True,
     )
 
+    def toggle_pin_note(e, note_id, card):
+        # Obtém a nota atual do banco
+        nota = db.obter_nota(note_id)
+        novo_estado = not bool(nota[7])  # Inverte o estado atual
+        
+        # Atualiza no banco de dados
+        db.atualizar_nota(note_id, fixada=1 if novo_estado else 0)
+        
+        # Remove o card da seção atual
+        remove_note_from_sections(card, pinned_notes_section, normal_notes_section)
+        
+        # Cria um novo card com o estado atualizado
+        handlers = {
+            'on_color_change': change_note_color,
+            'on_archive': archive_note,
+            'on_delete': delete_note,
+            'on_drag_accept': handle_note_drag_accept,
+            'on_pin': toggle_pin_note
+        }
+        
+        novo_card = create_note_card_from_data([
+            nota[0],  # id
+            nota[1],  # titulo
+            nota[2],  # conteudo
+            None, None, None, None,
+            novo_estado,  # fixada
+            nota[8]  # corFundo
+        ], handlers, page)
+        
+        # Adiciona na seção apropriada
+        if novo_estado:
+            pinned_notes_section.controls[1].content.controls.append(novo_card)
+        else:
+            normal_notes_section.controls[1].content.controls.append(novo_card)
+        
+        # Atualiza a UI
+        update_content_area()
+        page.update()
+
     def load_notes():
         # Carrega todas as notas ativas (não arquivadas e não na lixeira)
         notas = db.listar_notas()
@@ -459,7 +499,8 @@ def main(page: ft.Page):
             'on_color_change': change_note_color,
             'on_archive': archive_note,
             'on_delete': delete_note,
-            'on_drag_accept': handle_note_drag_accept
+            'on_drag_accept': handle_note_drag_accept,
+            'on_pin': toggle_pin_note
         }
         
         for nota in notas:

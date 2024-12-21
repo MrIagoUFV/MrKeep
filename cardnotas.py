@@ -3,7 +3,7 @@ from addnota import note_colors
 
 def create_note_card(title, content, is_pinned=False, bgcolor=None, note_id=None, 
                     on_color_change=None, on_archive=None, on_delete=None, 
-                    on_drag_accept=None, page=None):
+                    on_drag_accept=None, on_pin=None, page=None):
     # Cria o botão de fixar
     pin_button = ft.IconButton(
         icon=ft.Icons.PUSH_PIN if is_pinned else ft.Icons.PUSH_PIN_OUTLINED,
@@ -11,6 +11,7 @@ def create_note_card(title, content, is_pinned=False, bgcolor=None, note_id=None
         icon_size=20,
         opacity=1 if is_pinned else 0,
         visible=True,
+        on_click=lambda e: on_pin(e, note_id, card) if on_pin else None,
     )
 
     # Função para criar o conteúdo do card
