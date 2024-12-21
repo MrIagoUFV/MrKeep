@@ -71,6 +71,11 @@ def create_archive_card(title, content, bgcolor=None, note_id=None,
                     size=14,
                     color="#E2E2E3",
                     opacity=0.8,
+                    max_lines=4,  # Limita a 4 linhas
+                    overflow=ft.TextOverflow.ELLIPSIS,  # Adiciona ... no final
+                    text_align=ft.TextAlign.LEFT,  # Mantém alinhamento à esquerda
+                    expand=False,  # Importante para não expandir e empurrar os botões
+                    height=80,  # Altura fixa para 4 linhas (~20px por linha)
                 ),
                 # Espaçador flexível
                 ft.Container(expand=True),
@@ -119,6 +124,11 @@ def create_archive_card(title, content, bgcolor=None, note_id=None,
                 size=14,
                 color="#E2E2E3",
                 opacity=0.8,
+                max_lines=4,  # Limita a 4 linhas
+                overflow=ft.TextOverflow.ELLIPSIS,  # Adiciona ... no final
+                text_align=ft.TextAlign.LEFT,  # Mantém alinhamento à esquerda
+                expand=False,  # Importante para não expandir e empurrar os botões
+                height=80,  # Altura fixa para 4 linhas (~20px por linha)
             ),
         ]),
         width=240,
