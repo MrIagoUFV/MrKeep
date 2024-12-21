@@ -147,6 +147,15 @@ def main(page: ft.Page):
             # Fecha o input
             close_note(e)
             
+            # Atualiza o content_area para mostrar as notas ao invés do empty state
+            content_area.content.controls[1].content = ft.Column(
+                [
+                    pinned_notes_section,
+                    normal_notes_section,
+                ],
+                scroll=ft.ScrollMode.AUTO,
+            )
+            
             # Atualiza a UI
             page.update()
 
@@ -673,6 +682,30 @@ def main(page: ft.Page):
         ],
     )
 
+    def create_empty_state():
+        return ft.Container(
+            content=ft.Column(
+                controls=[
+                    ft.Icon(
+                        name=ft.Icons.LIGHTBULB_OUTLINE,
+                        size=120,
+                        color="#37383A",
+                    ),
+                    ft.Text(
+                        "As notas adicionadas são exibidas aqui",
+                        size=16,
+                        color="#9AA0A6",
+                        text_align=ft.TextAlign.CENTER,
+                    ),
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                alignment=ft.MainAxisAlignment.CENTER,
+                spacing=20,
+            ),
+            expand=True,
+            alignment=ft.alignment.center,
+        )
+
     # Container da área central atualizado com as grades de notas
     content_area = ft.Container(
         content=ft.Column(
@@ -683,9 +716,11 @@ def main(page: ft.Page):
                     padding=ft.padding.only(top=25, left=25, right=25),
                     bgcolor="#202124",
                 ),
-                # Container com scroll para as notas
+                # Container com scroll para as notas ou empty state
                 ft.Container(
-                    content=ft.Column(
+                    content=create_empty_state() if len(pinned_notes_section.controls[1].content.controls) == 0 
+                        and len(normal_notes_section.controls[1].content.controls) == 0
+                    else ft.Column(
                         [
                             pinned_notes_section,
                             normal_notes_section,
@@ -738,6 +773,15 @@ def main(page: ft.Page):
                 pinned_notes_section.controls[1].content.controls.append(card)
             else:
                 normal_notes_section.controls[1].content.controls.append(card)
+        
+        # Atualiza o content_area baseado na existência de notas
+        content_area.content.controls[1].content = create_empty_state() if len(notas) == 0 else ft.Column(
+            [
+                pinned_notes_section,
+                normal_notes_section,
+            ],
+            scroll=ft.ScrollMode.AUTO,
+        )
     
     # Carrega as notas existentes
     load_notes()
