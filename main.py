@@ -14,6 +14,7 @@ from arquivosections import create_archive_section
 from lixeirasections import create_trash_section
 from noteoperations import handle_drag_accept, create_note_card_from_data, remove_note_from_sections
 from modaleditnotas import handle_edit_note
+from modaleditarq import handle_edit_archive
 
 def main(page: ft.Page):
     # Inicializa o banco de dados
@@ -278,7 +279,8 @@ def main(page: ft.Page):
             'on_color_change': change_note_color,
             'on_restore': restore_note,
             'on_delete': delete_note,
-            'on_drag_accept': handle_note_drag_accept
+            'on_drag_accept': handle_note_drag_accept,
+            'on_edit': lambda e, note_id, card: handle_edit_archive(page, db, note_id, card, archive_section, handlers)
         }
         
         for nota in notas_arquivadas:
@@ -292,6 +294,7 @@ def main(page: ft.Page):
                 on_restore=handlers['on_restore'],
                 on_delete=handlers['on_delete'],
                 on_drag_accept=handlers['on_drag_accept'],
+                on_edit=handlers['on_edit'],
                 page=page
             )
             

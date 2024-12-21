@@ -3,7 +3,7 @@ from addnota import note_colors
 
 def create_archive_card(title, content, bgcolor=None, note_id=None, 
                        on_color_change=None, on_restore=None, on_delete=None, 
-                       on_drag_accept=None, page=None):
+                       on_drag_accept=None, on_edit=None, page=None):
     """Cria um card de nota arquivada"""
     
     # Função para criar o conteúdo do card
@@ -45,6 +45,7 @@ def create_archive_card(title, content, bgcolor=None, note_id=None,
                     icon_color="#E2E2E3",
                     icon_size=20,
                     tooltip="Editar nota",
+                    on_click=lambda e: on_edit(e, note_id, card) if on_edit else None,
                 ),
                 ft.IconButton(
                     icon=ft.Icons.RESTORE,
