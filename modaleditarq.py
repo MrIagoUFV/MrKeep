@@ -47,17 +47,23 @@ def handle_edit_archive(page, db, note_id, card, archive_section, handlers):
         page.update()
     
     def save_edited_note(e, note_id, handlers):
+        # Obtém a nota atual para preservar a ordem
+        nota_atual = db.obter_nota(note_id)
+        ordem_atual = nota_atual[-1] if len(nota_atual) > 11 else 0
+        
         # Atualiza a nota no banco de dados
         db.atualizar_nota(
             note_id,
             titulo=edit_note_title,
             conteudo=edit_note_content,
-            corFundo=edit_note_color
+            corFundo=edit_note_color,
+            ordem=ordem_atual  # Mantém a ordem original
         )
         
         # Remove o card antigo da seção de arquivo
         for draggable in archive_section.content.controls:
             if draggable.content.content == card:
+                index = archive_section.content.controls.index(draggable)
                 archive_section.content.controls.remove(draggable)
                 break
         
@@ -72,11 +78,13 @@ def handle_edit_archive(page, db, note_id, card, archive_section, handlers):
             on_delete=handlers['on_delete'],
             on_drag_accept=handlers['on_drag_accept'],
             on_edit=handlers['on_edit'],
-            page=page
+            page=page,
+            db=db,
+            archive_section=archive_section
         )
         
-        # Adiciona o novo card na seção de arquivo
-        archive_section.content.controls.append(novo_card)
+        # Adiciona o novo card na mesma posição
+        archive_section.content.controls.insert(index, novo_card)
         
         # Fecha o modal
         close_edit_modal(e)

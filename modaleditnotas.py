@@ -55,14 +55,38 @@ def handle_edit_note(page, db, note_id, card, pinned_section, normal_section, ha
         page.update()
     
     def save_edited_note(e, note_id, handlers):
+        # Obtém a nota atual para preservar a ordem
+        nota_atual = db.obter_nota(note_id)
+        ordem_atual = nota_atual[-1] if len(nota_atual) > 11 else 0
+        
         # Atualiza a nota no banco de dados
         db.atualizar_nota(
             note_id,
             titulo=edit_note_title,
             conteudo=edit_note_content,
             corFundo=edit_note_color,
-            fixada=1 if edit_is_pinned else 0
+            fixada=1 if edit_is_pinned else 0,
+            ordem=ordem_atual  # Mantém a ordem original
         )
+        
+        # Encontra a posição atual do card
+        index = None
+        section = None
+        
+        # Procura nas notas fixadas
+        for i, note in enumerate(pinned_section.controls[1].content.controls):
+            if note.content.content == card:
+                index = i
+                section = pinned_section.controls[1].content
+                break
+        
+        # Se não encontrou nas fixadas, procura nas normais
+        if index is None:
+            for i, note in enumerate(normal_section.controls[1].content.controls):
+                if note.content.content == card:
+                    index = i
+                    section = normal_section.controls[1].content
+                    break
         
         # Remove o card antigo
         remove_note_from_sections(card, pinned_section, normal_section)
@@ -77,11 +101,15 @@ def handle_edit_note(page, db, note_id, card, pinned_section, normal_section, ha
             edit_note_color
         ], handlers, page)
         
-        # Adiciona o novo card na seção apropriada
-        if edit_is_pinned:
-            pinned_section.controls[1].content.controls.append(novo_card)
+        # Adiciona o novo card na seção apropriada mantendo a posição
+        target_section = pinned_section.controls[1].content if edit_is_pinned else normal_section.controls[1].content
+        
+        if section == target_section:
+            # Se continua na mesma seção, mantém a posição
+            target_section.controls.insert(index, novo_card)
         else:
-            normal_section.controls[1].content.controls.append(novo_card)
+            # Se mudou de seção, adiciona no final
+            target_section.controls.append(novo_card)
         
         # Fecha o modal
         close_edit_modal(e)
