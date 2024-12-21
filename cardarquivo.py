@@ -35,6 +35,18 @@ def create_archive_card(title, content, bgcolor=None, note_id=None,
                     ],
                 ),
                 ft.IconButton(
+                    icon=ft.Icons.VISIBILITY_OUTLINED,
+                    icon_color="#E2E2E3",
+                    icon_size=20,
+                    tooltip="Visualizar nota",
+                ),
+                ft.IconButton(
+                    icon=ft.Icons.EDIT_OUTLINED,
+                    icon_color="#E2E2E3",
+                    icon_size=20,
+                    tooltip="Editar nota",
+                ),
+                ft.IconButton(
                     icon=ft.Icons.RESTORE,
                     icon_color="#E2E2E3",
                     icon_size=20,

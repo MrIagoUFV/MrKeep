@@ -42,6 +42,18 @@ def create_note_card(title, content, is_pinned=False, bgcolor=None, note_id=None
                     ],
                 ),
                 ft.IconButton(
+                    icon=ft.Icons.VISIBILITY_OUTLINED,
+                    icon_color="#E2E2E3",
+                    icon_size=20,
+                    tooltip="Visualizar nota",
+                ),
+                ft.IconButton(
+                    icon=ft.Icons.EDIT_OUTLINED,
+                    icon_color="#E2E2E3",
+                    icon_size=20,
+                    tooltip="Editar nota",
+                ),
+                ft.IconButton(
                     icon=ft.Icons.ARCHIVE_OUTLINED,
                     icon_color="#E2E2E3",
                     icon_size=20,
