@@ -4,31 +4,6 @@ Ainda falta:
 
 ## VIEWS
 
-- Criar a visualização e funcionalidade de arquivos
-
-    - Visualização:
-        - Criar section de arquivos:
-            - Criar arquivosections.py (DRY: usar o que for útil do notesections.py)
-                - Quando houver notas no arquivo:
-                    - Mostrar a grade de notas com as notas do arquivo
-                        - Nos arquivos, as notas não podem ser fixadas, ou seja, só existe uma seção de grade.
-                        - A grade de notas deve ter o mesmo estilo e comportamento das notas da página inicial, porém não tem título como "Arquivos", "outras notas", "fixadas" etc.
-                - Quando não houver notas no arquivo:
-                        - Mostrar a tela atual de arquivo vazio
-                        
-    - Cards de notas arquivo:
-        - Criar o cardarquivo.py (DRY: usar o que for útil do cardnotas.py)
-            - O card de arquivo tem o mesmo comportamento do card de notas, porém tem os icones diferentes:
-                - Não tem o ícone de fixar
-                - Tem o ícone de restaurar no lugar do ícone de arquivar
-            - Criar o action handler de cada icone do card do arquivo:
-                - Mudar cor do card:
-                    - Mudar a cor do card para a cor selecionada (já existe a funcionalidade de mudar a cor do card no cardnotas.py)
-                - Restaurar:
-                    - Restaurar a nota (atualiza o db para retirar o estado de arquivado e tira ela da view de arquivos, e volta para a view de notas)
-                - Excluir:
-                    - Excluir a nota (já existe a funcionalidade de excluir a nota no cardnotas.py)
-
 - Criar a visualização e funcionalidade de lixeira
 
     - Visualização:

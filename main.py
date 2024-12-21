@@ -5,11 +5,13 @@ from menu import create_menu_item, create_side_menu
 from addnota import create_note_input, note_colors
 from cardnotas import create_note_card
 from cardarquivo import create_archive_card
+from cardlixeira import create_trash_card
 from viewnotas import create_view_notas
 from viewarq import create_view_arquivo
 from viewtrash import create_view_lixeira
 from notesections import create_notes_section
 from arquivosections import create_archive_section
+from lixeirasections import create_trash_section
 from noteoperations import handle_drag_accept, create_note_card_from_data, remove_note_from_sections
 
 def main(page: ft.Page):
@@ -67,9 +69,13 @@ def main(page: ft.Page):
         nonlocal current_page
         current_page = new_page
         
-        # Se mudou para a página de arquivos, carrega as notas arquivadas
+        # Carrega as notas apropriadas para cada página
         if new_page == "arquivo":
             load_archived_notes()
+        elif new_page == "lixeira":
+            load_trash_notes()
+        else:  # notas
+            load_notes()
         
         update_side_menu()
         update_navbar()
@@ -155,11 +161,56 @@ def main(page: ft.Page):
         )
 
     def delete_note(e, note_id, card):
-        # Exclui a nota do banco de dados
+        # Move a nota para a lixeira no banco de dados
+        db.atualizar_nota(note_id, lixeira=1)
+        
+        # Remove o card da interface
+        if current_page == "notas":
+            remove_note_from_sections(card, pinned_notes_section, normal_notes_section)
+        elif current_page == "arquivo":
+            for draggable in archive_section.content.controls:
+                if draggable.content.content == card:
+                    archive_section.content.controls.remove(draggable)
+                    break
+        
+        # Atualiza o content_area baseado na existência de notas
+        update_content_area()
+        page.update()
+
+    def delete_note_forever(e, note_id, card):
+        # Exclui a nota permanentemente do banco de dados
         db.excluir_nota(note_id)
         
         # Remove o card da interface
-        remove_note_from_sections(card, pinned_notes_section, normal_notes_section)
+        for draggable in trash_section.content.controls:
+            if draggable.content.content == card:
+                trash_section.content.controls.remove(draggable)
+                break
+        
+        # Atualiza o content_area baseado na existência de notas
+        update_content_area()
+        page.update()
+
+    def restore_note_from_trash(e, note_id, card):
+        # Obtém o estado anterior da nota
+        nota = db.obter_nota(note_id)
+        estava_arquivada = nota[9]  # índice 9 é o campo 'arquivada'
+        
+        # Restaura a nota no banco de dados
+        db.atualizar_nota(note_id, lixeira=0)
+        
+        # Remove o card da interface da lixeira
+        for draggable in trash_section.content.controls:
+            if draggable.content.content == card:
+                trash_section.content.controls.remove(draggable)
+                break
+        
+        # Se estava arquivada e estamos na página de arquivo, recarrega as notas arquivadas
+        if estava_arquivada and current_page == "arquivo":
+            load_archived_notes()
+        # Se não estava arquivada e estamos na página de notas, recarrega as notas
+        elif not estava_arquivada and current_page == "notas":
+            load_notes()
         
         # Atualiza o content_area baseado na existência de notas
         update_content_area()
@@ -309,7 +360,7 @@ def main(page: ft.Page):
         elif current_page == "arquivo":
             content_area.content = create_view_arquivo(archive_section).content
         else:  # lixeira
-            content_area.content = create_view_lixeira().content
+            content_area.content = create_view_lixeira(trash_section).content
 
     def update_note_input():
         update_content_area()
@@ -349,10 +400,11 @@ def main(page: ft.Page):
         page=page
     )
 
-    # Seções de notas usando o módulo notesections.py
+    # Seções de notas usando os módulos apropriados
     pinned_notes_section = create_notes_section("FIXADAS", True)
     normal_notes_section = create_notes_section("OUTRAS", False)
     archive_section = create_archive_section()
+    trash_section = create_trash_section()
 
     # Container da área central atualizado com as grades de notas
     content_area = ft.Container(
@@ -431,6 +483,39 @@ def main(page: ft.Page):
     
     # Atualiza a página com as configurações
     page.update()
+
+    def load_trash_notes():
+        # Carrega todas as notas da lixeira
+        notas_lixeira = db.listar_notas(lixeira=True)
+        
+        # Limpa a grade de notas da lixeira
+        trash_section.content.controls.clear()
+        
+        handlers = {
+            'on_restore': restore_note_from_trash,
+            'on_delete_forever': delete_note_forever,
+            'on_drag_accept': handle_note_drag_accept
+        }
+        
+        for nota in notas_lixeira:
+            # Cria o card
+            card = create_trash_card(
+                title=nota[1],  # titulo
+                content=nota[2],  # conteudo
+                bgcolor=nota[8],  # corFundo
+                note_id=nota[0],  # id
+                on_restore=handlers['on_restore'],
+                on_delete_forever=handlers['on_delete_forever'],
+                on_drag_accept=handlers['on_drag_accept'],
+                page=page
+            )
+            
+            # Adiciona na grade da lixeira
+            trash_section.content.controls.append(card)
+        
+        # Atualiza o content_area baseado na existência de notas
+        update_content_area()
+        page.update()
 
 # Inicia a aplicação
 ft.app(main) 
