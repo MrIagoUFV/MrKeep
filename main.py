@@ -296,7 +296,9 @@ def main(page: ft.Page):
                 on_delete=handlers['on_delete'],
                 on_drag_accept=handlers['on_drag_accept'],
                 on_edit=handlers['on_edit'],
-                page=page
+                page=page,
+                db=db,
+                archive_section=archive_section
             )
             
             # Adiciona na grade de arquivos
