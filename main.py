@@ -4,10 +4,12 @@ from navbar import create_navbar
 from menu import create_menu_item, create_side_menu
 from addnota import create_note_input, note_colors
 from cardnotas import create_note_card
+from cardarquivo import create_archive_card
 from viewnotas import create_view_notas
 from viewarq import create_view_arquivo
 from viewtrash import create_view_lixeira
 from notesections import create_notes_section
+from arquivosections import create_archive_section
 from noteoperations import handle_drag_accept, create_note_card_from_data, remove_note_from_sections
 
 def main(page: ft.Page):
@@ -64,6 +66,11 @@ def main(page: ft.Page):
     def handle_page_change(new_page):
         nonlocal current_page
         current_page = new_page
+        
+        # Se mudou para a página de arquivos, carrega as notas arquivadas
+        if new_page == "arquivo":
+            load_archived_notes()
+        
         update_side_menu()
         update_navbar()
         update_content_area()
@@ -179,6 +186,62 @@ def main(page: ft.Page):
         update_content_area()
         page.update()
 
+    def restore_note(e, note_id, card):
+        # Atualiza a nota como não arquivada no banco de dados
+        db.atualizar_nota(note_id, arquivada=0)
+        
+        # Encontra e remove o Draggable que contém o card
+        for draggable in archive_section.content.controls:
+            if draggable.content.content == card:
+                archive_section.content.controls.remove(draggable)
+                break
+        
+        # Limpa as grades de notas
+        pinned_notes_section.controls[1].content.controls.clear()
+        normal_notes_section.controls[1].content.controls.clear()
+        
+        # Recarrega as notas
+        load_notes()
+        
+        # Atualiza o content_area baseado na existência de notas
+        update_content_area()
+        page.update()
+
+    def load_archived_notes():
+        # Carrega todas as notas arquivadas
+        notas_arquivadas = db.listar_notas(arquivadas=True)
+        
+        # Limpa a grade de notas arquivadas
+        archive_section.content.controls.clear()
+        
+        handlers = {
+            'on_color_change': change_note_color,
+            'on_restore': restore_note,
+            'on_delete': delete_note,
+            'on_drag_accept': handle_note_drag_accept
+        }
+        
+        for nota in notas_arquivadas:
+            # Cria o card
+            card = create_archive_card(
+                title=nota[1],  # titulo
+                content=nota[2],  # conteudo
+                bgcolor=nota[8],  # corFundo
+                note_id=nota[0],  # id
+                on_color_change=handlers['on_color_change'],
+                on_restore=handlers['on_restore'],
+                on_delete=handlers['on_delete'],
+                on_drag_accept=handlers['on_drag_accept'],
+                page=page
+            )
+            
+            # Adiciona na grade de arquivos
+            archive_section.content.controls.append(card)
+        
+        # Atualiza o content_area baseado na existência de notas
+        update_content_area()
+        page.update()
+
     def add_note(e):
         nonlocal note_title, note_content, is_pinned, note_color
         if note_title.strip():  # Só cria se tiver título
@@ -244,7 +307,7 @@ def main(page: ft.Page):
                 normal_notes_section=normal_notes_section,
             ).content
         elif current_page == "arquivo":
-            content_area.content = create_view_arquivo().content
+            content_area.content = create_view_arquivo(archive_section).content
         else:  # lixeira
             content_area.content = create_view_lixeira().content
 
@@ -288,6 +351,7 @@ def main(page: ft.Page):
     # Seções de notas usando o módulo notesections.py
     pinned_notes_section = create_notes_section("FIXADAS", True)
     normal_notes_section = create_notes_section("OUTRAS", False)
+    archive_section = create_archive_section()
 
     # Container da área central atualizado com as grades de notas
     content_area = ft.Container(
@@ -333,6 +397,10 @@ def main(page: ft.Page):
     def load_notes():
         # Carrega todas as notas ativas (não arquivadas e não na lixeira)
         notas = db.listar_notas()
+        
+        # Limpa as grades de notas
+        pinned_notes_section.controls[1].content.controls.clear()
+        normal_notes_section.controls[1].content.controls.clear()
         
         handlers = {
             'on_color_change': change_note_color,
