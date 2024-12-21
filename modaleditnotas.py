@@ -19,6 +19,18 @@ def handle_edit_note(page, db, note_id, card, pinned_section, normal_section, ha
     edit_note_color = nota[8]  # cor
     edit_is_pinned = bool(nota[7])  # fixada
     
+    def handle_archive_from_modal(e):
+        # Chama a função de arquivar original
+        handlers['on_archive'](e, note_id, card)
+        # Fecha o modal
+        close_edit_modal(e)
+
+    def handle_delete_from_modal(e):
+        # Chama a função de excluir original
+        handlers['on_delete'](e, note_id, card)
+        # Fecha o modal
+        close_edit_modal(e)
+    
     # Funções específicas para o modal de edição
     def update_edit_title(e):
         nonlocal edit_note_title
@@ -95,8 +107,8 @@ def handle_edit_note(page, db, note_id, card, pinned_section, normal_section, ha
         update_content=update_edit_content,
         save_note=lambda e, id: save_edited_note(e, id, handlers),
         close_modal=close_edit_modal,
-        on_archive=handlers['on_archive'],
-        on_delete=handlers['on_delete']
+        on_archive=handle_archive_from_modal,
+        on_delete=handle_delete_from_modal
     )
     
     # Abre o modal
@@ -201,14 +213,14 @@ def create_edit_modal(
                         icon_color="#E2E2E3",
                         icon_size=20,
                         tooltip="Arquivar nota",
-                        on_click=lambda e: on_archive(e, note_id) if on_archive else None,
+                        on_click=on_archive,
                     ),
                     ft.IconButton(
                         icon=ft.Icons.DELETE_OUTLINE,
                         icon_color="#E2E2E3",
                         icon_size=20,
                         tooltip="Excluir nota",
-                        on_click=lambda e: on_delete(e, note_id) if on_delete else None,
+                        on_click=on_delete,
                     ),
                 ], spacing=0),
 
