@@ -1,5 +1,13 @@
 # MrKeep
 
+Esse projeto foi desenvolvido com o objetivo de demonstrar a atual capacidade da IA na programação quando usada da forma correta. Foi inteiramente desenvolvido por IA, com a ajuda de um humano para corrigir alguns erros. 
+
+Eu gravei todo o processo: (em edição)
+
+Essa foi o primeiro projeto para minha Comunidade de Programação com IA. Se você gostou da ideia e quer aprender com mais projetos, te convido a participar:
+- Grupo Whats: https://chat.whatsapp.com/CP7zu5ebSRY2RCiq5g8Slu
+- Canal Youtube: https://www.youtube.com/@mriago
+
 MrKeep é um clone do Google Keep desenvolvido em Python usando o framework Flet. É um aplicativo de notas que permite aos usuários criar, organizar e gerenciar suas anotações de forma eficiente.
 
 ![Gif Demonstração](<keep gif use.gif>)
