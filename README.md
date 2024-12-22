@@ -2,6 +2,8 @@
 
 MrKeep é um clone do Google Keep desenvolvido em Python usando o framework Flet. É um aplicativo de notas que permite aos usuários criar, organizar e gerenciar suas anotações de forma eficiente.
 
+![Gif Demonstração](<keep gif use.gif>)
+
 ## 🚀 Funcionalidades
 
 - ✏️ Criação de notas com título e conteúdo
@@ -20,6 +22,8 @@ MrKeep é um clone do Google Keep desenvolvido em Python usando o framework Flet
 - SQLite (para o banco de dados)
 
 ## 🔧 Instalação
+
+![Gif Instalação](<keep gif install.gif>)
 
 1. Clone o repositório:
 ```bash
