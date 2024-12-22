@@ -17,28 +17,26 @@ def create_menu_item(icon, text, selected=False, menu_expanded=False, on_click=N
             alignment=ft.alignment.center,
         )
 
-        container = ft.Container(
+        return ft.TextButton(
             content=ft.Row(
                 [icon_container],
                 alignment=ft.MainAxisAlignment.START,
             ),
-            padding=ft.padding.only(left=12, top=4, bottom=4),
-            animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
+            style=ft.ButtonStyle(
+                padding=ft.padding.only(left=12, top=4, bottom=4),
+                bgcolor={
+                    ft.MaterialState.DEFAULT: ft.colors.TRANSPARENT,
+                    ft.MaterialState.HOVERED: "#28292C" if not selected else None,
+                },
+                animation_duration=300,
+                overlay_color=ft.colors.TRANSPARENT,
+            ),
             on_click=on_click,
         )
 
-        if not selected:
-            def handle_hover(e):
-                icon_container.bgcolor = "#3C3C3C" if e.data == "true" else None
-                if page:
-                    page.update()
-            container.on_hover = handle_hover
-
-        return container
-
     # Estilo quando aberto (280px)
     def get_expanded_style():
-        container = ft.Container(
+        return ft.TextButton(
             content=ft.Row(
                 [
                     ft.Container(
@@ -62,25 +60,21 @@ def create_menu_item(icon, text, selected=False, menu_expanded=False, on_click=N
                 spacing=16,
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
-            bgcolor="#41331C" if selected else None,
-            padding=ft.padding.only(left=12, right=12, top=4, bottom=4),
-            border_radius=ft.border_radius.only(
-                top_right=28,
-                bottom_right=28
+            style=ft.ButtonStyle(
+                padding=ft.padding.only(left=12, right=12, top=4, bottom=4),
+                bgcolor={
+                    ft.MaterialState.DEFAULT: "#41331C" if selected else ft.colors.TRANSPARENT,
+                    ft.MaterialState.HOVERED: "#28292C" if not selected else None,
+                },
+                shape=ft.RoundedRectangleBorder(radius=ft.border_radius.only(
+                    top_right=28,
+                    bottom_right=28
+                )),
+                animation_duration=300,
+                overlay_color=ft.colors.TRANSPARENT,
             ),
-            margin=ft.margin.only(right=8),
-            animate=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT),
             on_click=on_click,
         )
-
-        if not selected:
-            def handle_hover(e):
-                container.bgcolor = "#28292C" if e.data == "true" else None
-                if page:
-                    page.update()
-            container.on_hover = handle_hover
-
-        return container
 
     return get_expanded_style() if menu_expanded else get_collapsed_style()
 
