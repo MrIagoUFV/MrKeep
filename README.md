@@ -4,13 +4,30 @@ Esse projeto foi desenvolvido com o objetivo de demonstrar a atual capacidade da
 
 Eu gravei todo o processo: (em edição)
 
-Essa foi o primeiro projeto para minha Comunidade de Programação com IA. Se você gostou da ideia e quer aprender com mais projetos, te convido a participar:
-- Grupo Whats: https://chat.whatsapp.com/CP7zu5ebSRY2RCiq5g8Slu
-- Canal Youtube: https://www.youtube.com/@mriago
-
 MrKeep é um clone do Google Keep desenvolvido em Python usando o framework Flet. É um aplicativo de notas que permite aos usuários criar, organizar e gerenciar suas anotações de forma eficiente.
 
 ![Gif Demonstração](<keep gif use.gif>)
+
+## Comunidade e Missão
+
+Esse foi o primeiro projeto para minha Comunidade de Programação com IA. 
+
+Meu propósito é colaborar com material de qualidade que sirva de base para educação nessa nova era da programação. 
+
+Além de:
+- Formar a vanguarda dos programadores com IA no Brasil
+- Conectar profissionais e entusiastas da área
+- Desenvolver e compartilhar as melhores práticas de programação com IA
+- Fomentar projetos inovadores em nossa comunidade
+
+O que você irá encontrar ao Participar da Comunidade (em breve):
+- Cursos completos de programação com IA.
+- Projetos completos com IA, com todo processo de desenvolvimento gravado.
+- Grupo de networking com profissionais e entusiastas da área.
+
+Se você gostou da ideia e quer aprender com mais projetos, te convido a participar do nosso grupo gratuito e se inscrever no canal do Youtube:
+- Grupo Whats: https://chat.whatsapp.com/CP7zu5ebSRY2RCiq5g8Slu
+- Canal Youtube: https://www.youtube.com/@mriago
 
 ## 🚀 Funcionalidades
 
