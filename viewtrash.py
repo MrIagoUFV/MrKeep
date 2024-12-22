@@ -36,6 +36,19 @@ def create_view_lixeira(trash_section=None):
     return ft.Container(
         content=ft.Column(
             [
+                # Aviso sobre exclusão automática
+                ft.Container(
+                    content=ft.Text(
+                        "As notas na lixeira são excluídas após sete dias.",
+                        size=12,
+                        color="#9AA0A6",
+                        italic=True,
+                        weight=ft.FontWeight.BOLD,
+                        text_align=ft.TextAlign.CENTER,
+                    ),
+                    alignment=ft.alignment.center,
+                    padding=ft.padding.only(top=16, bottom=16),
+                ),
                 # Container com scroll para as notas ou empty state
                 ft.Container(
                     content=create_empty_state() if len(trash_section.content.controls) == 0

@@ -15,6 +15,7 @@ from lixeirasections import create_trash_section
 from noteoperations import handle_drag_accept, create_note_card_from_data, remove_note_from_sections
 from modaleditnotas import handle_edit_note
 from modaleditarq import handle_edit_archive
+from datetime import datetime
 
 def main(page: ft.Page):
     # Inicializa o banco de dados
@@ -595,6 +596,9 @@ def main(page: ft.Page):
         # Limpa a grade de notas da lixeira
         trash_section.content.controls.clear()
         
+        # Data atual para comparação
+        agora = datetime.now()
+        
         handlers = {
             'on_restore': restore_note_from_trash,
             'on_delete_forever': delete_note_forever,
@@ -602,6 +606,15 @@ def main(page: ft.Page):
         }
         
         for nota in notas_lixeira:
+            # Verifica se a nota deve ser excluída permanentemente
+            data_modificacao = datetime.strptime(f"{nota[5]} {nota[6]}", "%Y-%m-%d %H:%M")
+            diferenca = agora - data_modificacao
+            
+            # Se passaram mais de 7 dias, exclui permanentemente
+            if diferenca.days >= 7:
+                db.excluir_nota(nota[0])
+                continue
+            
             # Cria o card
             card = create_trash_card(
                 title=nota[1],  # titulo
